@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "cartItems")
+@Table(name = "cartitems")
 @Getter
 @Setter
 public class CartItem {
@@ -15,15 +13,18 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cart_id", nullable = false)
-    private Long cartId;
+    @Column(nullable = false)
+    private String username;
 
-    @Column(name = "product_id", nullable = false)
-    private Long productId;
+    @Column(name = "shoe_id", nullable = false)
+    private Long shoeId;
+
+    @Column(nullable = false)
+    private double size;
+
+    @Column(nullable = false)
+    private String color;
 
     @Column(nullable = false)
     private int quantity;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 }

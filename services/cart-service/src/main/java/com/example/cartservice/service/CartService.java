@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface CartService {
     // Thêm sản phẩm vào giỏ hàng
-    void addProductToCart(String username, Long productId, int quantity);
+    void addItemToCart(String username, Long shoeId, double size, String color, int quantity);
 
     // Cập nhật số lượng sản phẩm trong giỏ hàng
-    void updateProductQuantity(String username, Long productId, int quantity);
+    void updateItemQuantity(String username, Long itemId, int quantity);
 
     // Xóa sản phẩm khỏi giỏ hàng
-    void removeProductFromCart(String username, Long productId);
+    void removeItemFromCart(String username, Long itemId);
 
     // Lấy danh sách sản phẩm trong giỏ hàng
     List<CartItem> getCartItems(String username);

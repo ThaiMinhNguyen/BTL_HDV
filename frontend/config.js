@@ -19,9 +19,15 @@ const API_CONFIG = {
     shoes: '/api/shoes',
     cart: '/api/cart',
     orders: '/api/orders',
-    users: '/api/users'
+    users: '/api/users',
+    brands: '/api/shoes/brands',
+    categories: '/api/shoes/categories'
   },
   getUrl(endpoint) {
+    if (!this.endpoints[endpoint]) {
+      console.error(`Endpoint '${endpoint}' is not defined in API_CONFIG.endpoints`);
+      return this.baseUrl + '/api/unknown';
+    }
     return this.baseUrl + this.endpoints[endpoint];
   },
   // Standard fetch options with CORS settings

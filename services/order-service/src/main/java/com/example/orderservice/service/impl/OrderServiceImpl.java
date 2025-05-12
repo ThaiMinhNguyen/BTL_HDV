@@ -16,6 +16,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -122,19 +123,19 @@ public class OrderServiceImpl implements OrderService {
         double totalPrice = 0.0;
         
         for (OrderItem item : order.getItems()) {
-            if (item.getProductId() == null) {
-                logger.warn("Found item with null productId");
-                throw new IllegalArgumentException("productId cannot be null");
+            if (item.getShoeId() == null) {
+                logger.warn("Found item with null shoeId");
+                throw new IllegalArgumentException("shoeId cannot be null");
             }
             
             // Get product information
-            String productUrl = "http://product-service:8082/api/products/" + item.getProductId();
-            logger.debug("Fetching product information from: {}", productUrl);
+            String productUrl = "http://shoe-service:8082/api/shoes/" + item.getShoeId();
+            logger.debug("Fetching shoe information from: {}", productUrl);
             
             Map<String, Object> productResponse = restTemplate.getForObject(productUrl, Map.class);
             if (productResponse == null) {
-                logger.warn("Product not found with ID: {}", item.getProductId());
-                throw new IllegalArgumentException("Product does not exist: " + item.getProductId());
+                logger.warn("Shoe not found with ID: {}", item.getShoeId());
+                throw new IllegalArgumentException("Shoe does not exist: " + item.getShoeId());
             }
             
             double productPrice = ((Number) productResponse.get("price")).doubleValue();
@@ -142,21 +143,21 @@ public class OrderServiceImpl implements OrderService {
             totalPrice += productPrice * item.getQuantity();
             
             // Verify product stock
-            String productCheckUrl = "http://product-service:8082/api/products/check?productId=" + 
-                    item.getProductId() + "&quantity=" + item.getQuantity();
-            logger.debug("Verifying product stock: {}", productCheckUrl);
+            String productCheckUrl = "http://shoe-service:8082/api/shoes/check?shoeId=" + 
+                    item.getShoeId() + "&size=" + item.getSize() + "&color=" + item.getColor() + "&quantity=" + item.getQuantity();
+            logger.debug("Verifying shoe stock: {}", productCheckUrl);
             
             Map<String, Boolean> productCheckResponse = restTemplate.getForObject(productCheckUrl, Map.class);
             if (productCheckResponse == null) {
-                logger.error("No response from ProductService for productId: {}", item.getProductId());
-                throw new RuntimeException("Error checking inventory for product: " + item.getProductId());
+                logger.error("No response from ShoeService for shoeId: {}", item.getShoeId());
+                throw new RuntimeException("Error checking inventory for shoe: " + item.getShoeId());
             }
             
             Boolean isProductAvailable = productCheckResponse.get("isAvailable");
             if (isProductAvailable == null || !isProductAvailable) {
-                logger.warn("Product not available in requested quantity: {} (required: {})", 
-                        item.getProductId(), item.getQuantity());
-                throw new IllegalStateException("Product not available in requested quantity: " + item.getProductId());
+                logger.warn("Shoe not available in requested quantity, size and color: {} (required: {})", 
+                        item.getShoeId(), item.getQuantity());
+                throw new IllegalStateException("Shoe not available in requested quantity, size and color: " + item.getShoeId());
             }
         }
         
@@ -182,12 +183,13 @@ public class OrderServiceImpl implements OrderService {
     
     private void updateProductInventory(Order order) {
         for (OrderItem item : order.getItems()) {
-            String updateProductUrl = "http://product-service:8082/api/products/" + 
-                    item.getProductId() + "/updateQuantity?quantity=" + item.getQuantity();
-            logger.debug("Updating product inventory: {}", updateProductUrl);
+            String updateProductUrl = "http://shoe-service:8082/api/shoes/" + 
+                    item.getShoeId() + "/updateInventory?size=" + item.getSize() + 
+                    "&color=" + item.getColor() + "&quantity=" + item.getQuantity();
+            logger.debug("Updating shoe inventory: {}", updateProductUrl);
             
             restTemplate.put(updateProductUrl, null);
-            logger.info("Successfully updated inventory for product ID: {}", item.getProductId());
+            logger.info("Successfully updated inventory for shoe ID: {}", item.getShoeId());
         }
     }
     
@@ -209,14 +211,14 @@ public class OrderServiceImpl implements OrderService {
     private void removeItemsFromCart(Order order) {
         for (OrderItem item : order.getItems()) {
             String cartUrl = "http://cart-service:8084/api/cart/" + order.getCustomerUsername() + 
-                    "/items/" + item.getProductId();
-            logger.debug("Removing product from cart: {}", cartUrl);
+                    "/items/" + item.getShoeId();
+            logger.debug("Removing shoe from cart: {}", cartUrl);
             
             try {
                 restTemplate.delete(cartUrl);
-                logger.info("Successfully removed product from cart for user: {}", order.getCustomerUsername());
+                logger.info("Successfully removed shoe from cart for user: {}", order.getCustomerUsername());
             } catch (Exception e) {
-                logger.warn("Error removing product from cart, continuing process: {}", e.getMessage());
+                logger.warn("Error removing shoe from cart, continuing process: {}", e.getMessage());
             }
         }
     }
@@ -265,5 +267,65 @@ public class OrderServiceImpl implements OrderService {
             logger.error("Unexpected error finding order {}: {}", orderId, e.getMessage(), e);
             throw new RuntimeException("Cannot find order: " + e.getMessage());
         }
+    }
+    
+    @Override
+    public List<Order> getOrdersByUsername(String username) {
+        logger.debug("Finding orders for username: {}", username);
+        try {
+            return orderRepository.findByCustomerUsername(username);
+        } catch (Exception e) {
+            logger.error("Unexpected error finding orders for user {}: {}", username, e.getMessage(), e);
+            throw new RuntimeException("Cannot find orders for user: " + e.getMessage());
+        }
+    }
+    
+    @Override
+    @Transactional
+    public Order updateOrderStatus(Long orderId, String status) {
+        logger.debug("Updating status for order ID: {} to: {}", orderId, status);
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new IllegalArgumentException("Order not found with ID: " + orderId));
+            
+            if (!isValidOrderStatus(status)) {
+                logger.warn("Invalid order status: {}", status);
+                throw new IllegalArgumentException("Invalid order status: " + status);
+            }
+            
+            order.setStatus(status);
+            Order updatedOrder = orderRepository.save(order);
+            
+            // Possibly send notification or perform additional actions based on status
+            if ("SHIPPED".equals(status) || "DELIVERED".equals(status)) {
+                try {
+                    sendOrderStatusUpdateEmail(updatedOrder);
+                } catch (Exception e) {
+                    logger.warn("Could not send status update email: {}", e.getMessage());
+                }
+            }
+            
+            return updatedOrder;
+        } catch (IllegalArgumentException e) {
+            logger.error("Error updating order status: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error updating order status: {}", e.getMessage(), e);
+            throw new RuntimeException("Cannot update order status: " + e.getMessage());
+        }
+    }
+    
+    private boolean isValidOrderStatus(String status) {
+        return "PENDING".equals(status) || 
+               "PROCESSING".equals(status) || 
+               "CONFIRMED".equals(status) || 
+               "SHIPPED".equals(status) || 
+               "DELIVERED".equals(status) || 
+               "CANCELLED".equals(status);
+    }
+    
+    private void sendOrderStatusUpdateEmail(Order order) {
+        // Implementation similar to sendOrderConfirmationEmail
+        // but with different message content based on the status
     }
 }

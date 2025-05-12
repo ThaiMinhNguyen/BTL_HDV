@@ -1,9 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if API_CONFIG exists and is loaded properly
+    if (!window.API_CONFIG) {
+        console.error("API_CONFIG not found. Make sure config.js is loaded before script.js");
+        // Create a fallback config
+        window.API_CONFIG = {
+            baseUrl: 'http://localhost:8080',
+            getUrl: function(endpoint) {
+                return this.baseUrl + '/api/' + endpoint;
+            },
+            fetchOptions: {
+                mode: 'cors',
+                credentials: 'omit',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            }
+        };
+    }
+
     // API Endpoints
     const API_BASE = {
         shoes: API_CONFIG.getUrl('shoes'),
-        brands: API_CONFIG.getUrl('shoes') + '/brands',
-        categories: API_CONFIG.getUrl('shoes') + '/categories',
+        brands: API_CONFIG.getUrl('brands'),
+        categories: API_CONFIG.getUrl('categories'),
         cart: API_CONFIG.getUrl('cart'),
         orders: API_CONFIG.getUrl('orders'),
         users: API_CONFIG.getUrl('users')
@@ -585,31 +605,39 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!currentUser) {
             alert('Vui lòng đăng nhập để đặt hàng');
-    return;
-  }
+            return;
+        }
 
         if (cart.length === 0) {
             alert('Giỏ hàng của bạn đang trống!');
-    return;
-  }
+            return;
+        }
 
         const formData = new FormData(checkoutForm);
+        
+        // Chuyển đổi chuỗi ngày thành định dạng yyyy-MM-ddTHH:mm:ss
+        const deliveryDateInput = formData.get('deliveryDate');
+        const deliveryDate = deliveryDateInput ? new Date(deliveryDateInput + 'T12:00:00').toISOString() : null;
         
         const orderData = {
             customerUsername: currentUser.username,
             customerName: formData.get('name'),
-            customerAddress: formData.get('address'),
+            shippingAddress: formData.get('address'), 
+            customerAddress: formData.get('address'),   
             customerEmail: formData.get('email'),
             customerPhone: formData.get('phone'),
-            deliveryDate: formData.get('deliveryDate'),
+            deliveryDate: deliveryDate,
             paymentMethod: formData.get('paymentMethod'),
             items: cart.map(item => ({
                 shoeId: item.shoeId,
                 size: item.size,
                 color: item.color,
-                quantity: item.quantity
+                quantity: item.quantity,
+                unitPrice: item.price
             }))
         };
+        
+        console.log('Sending order data:', orderData);
         
         try {
             const authOptions = {
@@ -625,7 +653,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(API_BASE.orders, authOptions);
             
             if (!response.ok) {
-                throw new Error('Không thể tạo đơn hàng. Vui lòng thử lại sau.');
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || 'Không thể tạo đơn hàng. Vui lòng thử lại sau.');
             }
             
             const order = await response.json();

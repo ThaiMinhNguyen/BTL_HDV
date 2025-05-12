@@ -1,7 +1,11 @@
 package com.example.shoeservice.controller;
 
+import com.example.shoeservice.entity.Brand;
+import com.example.shoeservice.entity.Category;
 import com.example.shoeservice.entity.Shoe;
 import com.example.shoeservice.entity.ShoeInventory;
+import com.example.shoeservice.service.BrandService;
+import com.example.shoeservice.service.CategoryService;
 import com.example.shoeservice.service.ShoeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,8 @@ import java.util.Optional;
 public class ShoeController {
 
     private final ShoeService shoeService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Shoe> getShoeById(@PathVariable Long id) {
@@ -81,5 +87,17 @@ public class ShoeController {
             @RequestParam int quantity) {
         shoeService.updateInventoryQuantity(id, size, color, quantity);
         return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/brands")
+    public ResponseEntity<List<Brand>> getAllBrands() {
+        List<Brand> brands = brandService.findAll();
+        return ResponseEntity.ok(brands);
+    }
+    
+    @GetMapping("/categories")
+    public ResponseEntity<List<Category>> getAllCategories() {
+        List<Category> categories = categoryService.findAll();
+        return ResponseEntity.ok(categories);
     }
 } 
