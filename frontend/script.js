@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // API Endpoints
-const API_BASE = {
+    const API_BASE = {
         shoes: API_CONFIG.getUrl('shoes'),
         brands: API_CONFIG.getUrl('shoes') + '/brands',
         categories: API_CONFIG.getUrl('shoes') + '/categories',
@@ -246,17 +246,14 @@ const API_BASE = {
 
     // Display Functions
     function displayShoes(shoes) {
-  productList.innerHTML = '';
-        
+        productList.innerHTML = '';
+            
         if (shoes.length === 0) {
             productList.innerHTML = '<p class="col-span-3 text-center py-8">Không tìm thấy giày phù hợp</p>';
             return;
         }
         
         shoes.forEach(shoe => {
-            const brand = brands.find(b => b.id === shoe.brandId);
-            const category = categories.find(c => c.id === shoe.categoryId);
-            
             const card = document.createElement('div');
             card.className = 'product-card bg-white p-4 rounded shadow';
             card.innerHTML = `
@@ -264,8 +261,8 @@ const API_BASE = {
                      alt="${shoe.name}" 
                      class="w-full h-48 object-cover rounded mb-2">
                 <h3 class="text-lg font-bold">${shoe.name}</h3>
-                <p class="text-blue-600">${brand ? brand.name : ''}</p>
-                <p class="text-gray-600">${category ? category.name : ''}</p>
+                <p class="text-blue-600">${shoe.brand ? shoe.brand.name : ''}</p>
+                <p class="text-gray-600">${shoe.category ? shoe.category.name : ''}</p>
                 <p class="text-green-600 font-bold">${shoe.price.toLocaleString('vi-VN')} VND</p>
                 <button class="view-detail-btn bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2 w-full"
                         data-id="${shoe.id}">Xem chi tiết</button>
@@ -284,14 +281,11 @@ const API_BASE = {
         selectedSize = null;
         selectedColor = null;
         
-        const brand = brands.find(b => b.id === shoe.brandId);
-        const category = categories.find(c => c.id === shoe.categoryId);
-        
         // Set basic info
         detailImage.src = shoe.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image';
         detailName.textContent = shoe.name;
-        detailBrand.textContent = brand ? brand.name : '';
-        detailCategory.textContent = category ? category.name : '';
+        detailBrand.textContent = shoe.brand ? shoe.brand.name : '';
+        detailCategory.textContent = shoe.category ? shoe.category.name : '';
         detailPrice.textContent = `${shoe.price.toLocaleString('vi-VN')} VND`;
         detailDescription.textContent = shoe.description || 'Không có mô tả';
         
@@ -375,8 +369,8 @@ const API_BASE = {
             
             if (!shoe) {
                 console.warn('Không tìm thấy thông tin giày cho item:', item);
-    return;
-  }
+        return;
+    }
 
             total += shoe.price * item.quantity;
             
@@ -662,8 +656,8 @@ const API_BASE = {
         
         // Filter shoes
         const filteredShoes = shoes.filter(shoe => {
-            if (brandId && shoe.brandId !== brandId) return false;
-            if (categoryId && shoe.categoryId !== categoryId) return false;
+            if (brandId && (!shoe.brand || shoe.brand.id !== brandId)) return false;
+            if (categoryId && (!shoe.category || shoe.category.id !== categoryId)) return false;
             if (gender && shoe.gender !== gender) return false;
             if (minPrice && shoe.price < minPrice) return false;
             if (maxPrice && shoe.price > maxPrice) return false;

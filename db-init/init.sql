@@ -117,64 +117,64 @@ CREATE TABLE cartitems (
 -- Thêm dữ liệu mẫu: Users
 INSERT INTO users (username, password, role, is_active, email, name, address, phone)
 VALUES 
-    ('testuser', 'password', 'CUSTOMER', TRUE, 'test@example.com', 'Người Dùng', 'Hà Nội, Việt Nam', '0987654321'),
-    ('admin', 'adminpass', 'ADMIN', TRUE, 'admin@example.com', 'Admin', 'TP HCM, Việt Nam', '0123456789');
+    ('testuser', 'password', 'CUSTOMER', TRUE, 'test@example.com', 'User', 'Hanoi, Vietnam', '0987654321'),
+    ('admin', 'adminpass', 'ADMIN', TRUE, 'admin@example.com', 'Admin', 'Ho Chi Minh City, Vietnam', '0123456789');
 
 -- Thêm dữ liệu mẫu: Brands
 INSERT INTO brands (name, description, logo_url)
 VALUES 
-    ('Nike', 'Thương hiệu giày thể thao hàng đầu thế giới', 'https://example.com/nike.png'),
-    ('Adidas', 'Thương hiệu giày thể thao nổi tiếng từ Đức', 'https://example.com/adidas.png'),
-    ('Converse', 'Thương hiệu giày lâu đời với thiết kế mang tính biểu tượng', 'https://example.com/converse.png'),
-    ('Vans', 'Thương hiệu giày trượt ván nổi tiếng từ Mỹ', 'https://example.com/vans.png');
+    ('Nike', 'Leading sports shoe brand in the world', 'https://example.com/nike.png'),
+    ('Adidas', 'Famous sports shoe brand from Germany', 'https://example.com/adidas.png'),
+    ('Converse', 'Longstanding shoe brand with iconic designs', 'https://example.com/converse.png'),
+    ('Vans', 'Famous skateboarding shoe brand from the USA', 'https://example.com/vans.png');
 
 -- Thêm dữ liệu mẫu: Categories
 INSERT INTO categories (name, description)
 VALUES 
-    ('Thể thao', 'Giày dành cho các hoạt động thể thao'),
-    ('Thời trang', 'Giày dành cho mục đích thời trang'),
-    ('Chạy bộ', 'Giày chuyên dụng cho chạy bộ'),
-    ('Đi bộ', 'Giày thoải mái cho đi bộ và đi lại hàng ngày');
+    ('Sports', 'Shoes for sports activities'),
+    ('Fashion', 'Shoes for fashion purposes'),
+    ('Running', 'Specialized shoes for running'),
+    ('Walking', 'Comfortable shoes for walking and daily activities');
 
 -- Thêm dữ liệu mẫu: Shoes
 INSERT INTO shoes (name, description, price, brand_id, category_id, material, gender, image_url)
 VALUES 
-    ('Nike Air Max 270', 'Giày thể thao với đệm khí Max Air lớn nhất', 150.00, 1, 1, 'Vải lưới, đế cao su', 'UNISEX', 'https://example.com/airmax270.jpg'),
-    ('Adidas Ultraboost', 'Giày chạy bộ với công nghệ đệm Boost', 180.00, 2, 3, 'Primeknit, đế Boost', 'UNISEX', 'https://example.com/ultraboost.jpg'),
-    ('Converse Chuck Taylor', 'Giày thời trang biểu tượng', 70.00, 3, 2, 'Vải canvas, đế cao su', 'UNISEX', 'https://example.com/chucktaylor.jpg'),
-    ('Vans Old Skool', 'Giày trượt ván cổ điển với dải bên hông đặc trưng', 65.00, 4, 2, 'Da lộn, vải canvas', 'UNISEX', 'https://example.com/oldskool.jpg'),
-    ('Nike Revolution 6', 'Giày chạy bộ nhẹ và thoáng khí', 85.00, 1, 3, 'Vải lưới', 'MEN', 'https://example.com/revolution6.jpg'),
-    ('Adidas Cloudfoam', 'Giày đi bộ thoải mái hàng ngày', 75.00, 2, 4, 'Vải lưới, đế Cloudfoam', 'WOMEN', 'https://example.com/cloudfoam.jpg');
+    ('Nike Air Max 270', 'Sports shoes with the largest Max Air cushioning', 150.00, 1, 1, 'Mesh, rubber sole', 'UNISEX', 'https://example.com/airmax270.jpg'),
+    ('Adidas Ultraboost', 'Running shoes with Boost cushioning technology', 180.00, 2, 3, 'Primeknit, Boost sole', 'UNISEX', 'https://example.com/ultraboost.jpg'),
+    ('Converse Chuck Taylor', 'Iconic fashion shoes', 70.00, 3, 2, 'Canvas, rubber sole', 'UNISEX', 'https://example.com/chucktaylor.jpg'),
+    ('Vans Old Skool', 'Classic skateboarding shoes with signature side stripe', 65.00, 4, 2, 'Suede, canvas', 'UNISEX', 'https://example.com/oldskool.jpg'),
+    ('Nike Revolution 6', 'Lightweight and breathable running shoes', 85.00, 1, 3, 'Mesh', 'MEN', 'https://example.com/revolution6.jpg'),
+    ('Adidas Cloudfoam', 'Comfortable daily walking shoes', 75.00, 2, 4, 'Mesh, Cloudfoam sole', 'WOMEN', 'https://example.com/cloudfoam.jpg');
 
 -- Thêm dữ liệu mẫu: ShoeInventory
 INSERT INTO shoe_inventory (shoe_id, size, color, quantity_in_stock)
 VALUES 
-    (1, 40.0, 'Đen', 15),
-    (1, 41.0, 'Đen', 10),
-    (1, 42.0, 'Đen', 8),
-    (1, 40.0, 'Trắng', 12),
-    (1, 41.0, 'Trắng', 7),
-    (2, 39.0, 'Xám', 9),
-    (2, 40.0, 'Xám', 11),
-    (2, 41.0, 'Xám', 6),
-    (2, 39.0, 'Đỏ', 7),
-    (3, 38.0, 'Trắng', 20),
-    (3, 39.0, 'Trắng', 15),
-    (3, 40.0, 'Trắng', 10),
-    (3, 38.0, 'Đen', 18),
-    (4, 39.0, 'Đen', 14),
-    (4, 40.0, 'Đen', 12),
-    (4, 41.0, 'Đen', 8),
-    (4, 39.0, 'Xanh Navy', 10),
-    (5, 42.0, 'Xanh dương', 9),
-    (5, 43.0, 'Xanh dương', 7),
-    (5, 44.0, 'Xanh dương', 5),
-    (6, 37.0, 'Hồng', 12),
-    (6, 38.0, 'Hồng', 10),
-    (6, 39.0, 'Hồng', 8);
+    (1, 40.0, 'Black', 15),
+    (1, 41.0, 'Black', 10),
+    (1, 42.0, 'Black', 8),
+    (1, 40.0, 'White', 12),
+    (1, 41.0, 'White', 7),
+    (2, 39.0, 'Grey', 9),
+    (2, 40.0, 'Grey', 11),
+    (2, 41.0, 'Grey', 6),
+    (2, 39.0, 'Red', 7),
+    (3, 38.0, 'White', 20),
+    (3, 39.0, 'White', 15),
+    (3, 40.0, 'White', 10),
+    (3, 38.0, 'Black', 18),
+    (4, 39.0, 'Black', 14),
+    (4, 40.0, 'Black', 12),
+    (4, 41.0, 'Black', 8),
+    (4, 39.0, 'Navy Blue', 10),
+    (5, 42.0, 'Blue', 9),
+    (5, 43.0, 'Blue', 7),
+    (5, 44.0, 'Blue', 5),
+    (6, 37.0, 'Pink', 12),
+    (6, 38.0, 'Pink', 10),
+    (6, 39.0, 'Pink', 8);
 
 -- Dữ liệu mẫu cho CartItems (giỏ hàng của testuser)
 INSERT INTO cartitems (username, shoe_id, size, color, quantity)
 VALUES 
-    ('testuser', 1, 41.0, 'Đen', 1),
-    ('testuser', 3, 39.0, 'Trắng', 1);
+    ('testuser', 1, 41.0, 'Black', 1),
+    ('testuser', 3, 39.0, 'White', 1);

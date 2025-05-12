@@ -16,7 +16,7 @@ const API_CONFIG = {
     return `http://${this.host}:${this.port}`;
   },
   endpoints: {
-    products: '/api/shoes',
+    shoes: '/api/shoes',
     cart: '/api/cart',
     orders: '/api/orders',
     users: '/api/users'
