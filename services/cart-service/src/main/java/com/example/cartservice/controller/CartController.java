@@ -41,6 +41,14 @@ public class CartController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{username}/shoes/{shoeId}")
+    public ResponseEntity<Void> removeShoeFromCart(
+            @PathVariable String username,
+            @PathVariable Long shoeId) {
+        cartService.removeShoeFromCart(username, shoeId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{username}/items")
     public ResponseEntity<List<CartItem>> getCartItems(@PathVariable String username) {
         List<CartItem> items = cartService.getCartItems(username);

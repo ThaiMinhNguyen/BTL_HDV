@@ -607,12 +607,12 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Vui lòng đăng nhập để đặt hàng');
             return;
         }
-
+    
         if (cart.length === 0) {
             alert('Giỏ hàng của bạn đang trống!');
             return;
         }
-
+    
         const formData = new FormData(checkoutForm);
         
         // Chuyển đổi chuỗi ngày thành định dạng yyyy-MM-ddTHH:mm:ss
@@ -637,7 +637,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }))
         };
         
-        console.log('Sending order data:', orderData);
+        // Hiển thị chi tiết data để debug
+        console.log('Sending order data:', JSON.stringify(orderData, null, 2));
         
         try {
             const authOptions = {
@@ -654,6 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => null);
+                console.error('Error response:', errorData); // Hiển thị chi tiết lỗi từ server
                 throw new Error(errorData?.message || 'Không thể tạo đơn hàng. Vui lòng thử lại sau.');
             }
             

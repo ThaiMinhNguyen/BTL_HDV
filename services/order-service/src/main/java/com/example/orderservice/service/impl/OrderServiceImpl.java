@@ -211,7 +211,7 @@ public class OrderServiceImpl implements OrderService {
     private void removeItemsFromCart(Order order) {
         for (OrderItem item : order.getItems()) {
             String cartUrl = "http://cart-service:8084/api/cart/" + order.getCustomerUsername() + 
-                    "/items/" + item.getShoeId();
+                    "/shoes/" + item.getShoeId();
             logger.debug("Removing shoe from cart: {}", cartUrl);
             
             try {

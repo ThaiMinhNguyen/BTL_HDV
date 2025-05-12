@@ -131,4 +131,26 @@ public class CartServiceImpl implements CartService {
             throw new RuntimeException("Không thể lấy danh sách sản phẩm trong giỏ hàng: " + e.getMessage());
         }
     }
+    
+    @Override
+    @Transactional
+    public void removeShoeFromCart(String username, Long shoeId) {
+        logger.debug("Xóa tất cả sản phẩm có shoeId {} khỏi giỏ hàng của người dùng: {}", shoeId, username);
+        try {
+            List<CartItem> items = cartItemRepository.findByUsernameAndShoeId(username, shoeId);
+            if (items.isEmpty()) {
+                logger.warn("Không tìm thấy sản phẩm với shoeId {} trong giỏ hàng của {}", shoeId, username);
+                return; // Không có gì để xóa, trả về thành công
+            }
+            
+            for (CartItem item : items) {
+                cartItemRepository.deleteById(item.getId());
+                logger.info("Đã xóa sản phẩm với id={}, shoeId={} khỏi giỏ hàng của {}", 
+                           item.getId(), shoeId, username);
+            }
+        } catch (Exception e) {
+            logger.error("Lỗi khi xóa sản phẩm theo shoeId khỏi giỏ hàng: {}", e.getMessage(), e);
+            throw new RuntimeException("Không thể xóa sản phẩm khỏi giỏ hàng: " + e.getMessage());
+        }
+    }
 }

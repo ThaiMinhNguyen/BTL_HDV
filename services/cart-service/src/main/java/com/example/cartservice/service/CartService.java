@@ -14,6 +14,9 @@ public interface CartService {
     // Xóa sản phẩm khỏi giỏ hàng
     void removeItemFromCart(String username, Long itemId);
 
+    // Xóa sản phẩm khỏi giỏ hàng theo shoeId
+    void removeShoeFromCart(String username, Long shoeId);
+
     // Lấy danh sách sản phẩm trong giỏ hàng
     List<CartItem> getCartItems(String username);
 }
