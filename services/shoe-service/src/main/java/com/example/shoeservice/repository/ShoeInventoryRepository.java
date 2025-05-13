@@ -21,7 +21,7 @@ public interface ShoeInventoryRepository extends JpaRepository<ShoeInventory, Lo
             @Param("color") String color);
     
     @Modifying
-    @Query("UPDATE ShoeInventory si SET si.quantityInStock = si.quantityInStock + :quantity " +
+    @Query("UPDATE ShoeInventory si SET si.quantityInStock = si.quantityInStock - :quantity " +
            "WHERE si.shoe.id = :shoeId AND si.size = :size AND si.color = :color")
     int updateInventoryQuantity(
             @Param("shoeId") Long shoeId, 
