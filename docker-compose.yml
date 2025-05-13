@@ -156,8 +156,8 @@ services:
     environment:
       - EUREKA_SERVER_URL=${EUREKA_SERVER_URL:-http://eureka-server:8761/eureka/}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
-      - RESEND_API_KEY=${RESEND_API_KEY:-re_6Z1wL99Y_c3b32g7AoTMWit2a7TMZZpLN}
-      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-no-reply@resend.dev}
+      - RESEND_API_KEY=${RESEND_API_KEY:-re_32EPjyYY_44EYDNhipMTh2s86Zyb1vci1}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
     depends_on:
       eureka-server:
         condition: service_healthy

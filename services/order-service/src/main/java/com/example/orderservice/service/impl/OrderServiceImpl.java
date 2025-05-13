@@ -325,7 +325,33 @@ public class OrderServiceImpl implements OrderService {
     }
     
     private void sendOrderStatusUpdateEmail(Order order) {
-        // Implementation similar to sendOrderConfirmationEmail
-        // but with different message content based on the status
+        String userInfoUrl = "http://user-service:8083/api/users/" + order.getCustomerUsername();
+        Map<String, String> userInfo = restTemplate.getForObject(userInfoUrl, Map.class);
+        String email = userInfo != null ? userInfo.get("email") : null;
+        
+        if (email != null) {
+            try {
+                String notificationUrl = "http://notification-service:8085/api/notifications/email";
+                logger.debug("Sending status update email request to: {}", notificationUrl);
+                
+                String itemsJson = objectMapper.writeValueAsString(order.getItems());
+                
+                restTemplate.postForEntity(notificationUrl,
+                        Map.of(
+                                "email", email,
+                                "orderId", order.getId(),
+                                "status", order.getStatus(),
+                                "items", itemsJson,
+                                "totalPrice", order.getTotalPrice()
+                        ),
+                        Void.class);
+                
+                logger.info("Successfully sent status update email for order ID: {}", order.getId());
+            } catch (Exception e) {
+                logger.warn("Could not send status update email: {}", e.getMessage());
+            }
+        } else {
+            logger.warn("No email found for user {}, skipping email notification", order.getCustomerUsername());
+        }
     }
 }
