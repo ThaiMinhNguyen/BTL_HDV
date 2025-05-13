@@ -1,16 +1,16 @@
 openapi: 3.0.0
 info:
   title: Order Service API
-  description: API for managing orders in the Online Ordering System
+  description: API quản lý toàn bộ quá trình đặt hàng, từ tạo đơn hàng đến kiểm tra tính hợp lệ và lưu trữ thông tin
   version: 1.0.0
 servers:
   - url: http://localhost:8081
-    description: Local development server
+    description: Máy chủ phát triển cục bộ
 paths:
   /api/orders:
     post:
-      summary: Create a new order
-      description: Create a new order with the provided details
+      summary: Tạo đơn hàng mới
+      description: Tạo đơn hàng mới với thông tin chi tiết được cung cấp
       requestBody:
         required: true
         content:
@@ -18,50 +18,133 @@ paths:
             schema:
               $ref: '#/components/schemas/OrderRequest'
       responses:
-        '200':
-          description: Order created successfully
+        '201':
+          description: Đơn hàng được tạo thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
         '400':
-          description: Invalid input
+          description: Dữ liệu không hợp lệ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: Server error
+          description: Lỗi máy chủ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
   /api/orders/{id}:
     get:
-      summary: Get order by ID
-      description: Retrieve an order by its ID
+      summary: Lấy thông tin đơn hàng theo ID
+      description: Trả về thông tin chi tiết của đơn hàng theo ID
       parameters:
         - name: id
           in: path
           required: true
+          description: ID của đơn hàng
           schema:
             type: integer
             format: int64
       responses:
         '200':
-          description: Successful operation
+          description: Thao tác thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
         '404':
-          description: Order not found
+          description: Không tìm thấy đơn hàng
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: Server error
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/orders/user/{username}:
+    get:
+      summary: Lấy danh sách đơn hàng của người dùng
+      description: Trả về danh sách tất cả đơn hàng của một người dùng cụ thể
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+        '404':
+          description: Không tìm thấy người dùng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/orders/{id}/status:
+    put:
+      summary: Cập nhật trạng thái đơn hàng
+      description: Cập nhật trạng thái của đơn hàng (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  description: Trạng thái mới của đơn hàng
+                  enum: [PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED]
+      responses:
+        '200':
+          description: Trạng thái được cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Không tìm thấy đơn hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
           content:
             application/json:
               schema:
@@ -73,74 +156,90 @@ components:
       required:
         - customerUsername
         - deliveryDate
+        - shippingAddress
         - items
       properties:
         customerUsername:
           type: string
-          description: Username of the customer
+          description: Tên đăng nhập của khách hàng
         customerName:
           type: string
-          description: Name of the customer
-        customerAddress:
-          type: string
-          description: Address of the customer
+          description: Tên của khách hàng
         customerEmail:
           type: string
           format: email
-          description: Email of the customer
+          description: Email của khách hàng
         customerPhone:
           type: string
-          description: Phone number of the customer
+          description: Số điện thoại của khách hàng
         deliveryDate:
           type: string
           format: date-time
-          description: Requested delivery date (must be at least 2 days in the future)
+          description: Ngày giao hàng yêu cầu (phải sau ít nhất 2 ngày kể từ hiện tại)
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddress'
         items:
           type: array
-          description: Items in the order
+          description: Các sản phẩm trong đơn hàng
           items:
             $ref: '#/components/schemas/OrderItemRequest'
     OrderItemRequest:
       type: object
       required:
-        - productId
+        - shoeId
+        - size
+        - color
         - quantity
       properties:
-        productId:
+        shoeId:
           type: integer
           format: int64
-          description: ID of the product
+          description: ID của giày
+        size:
+          type: number
+          format: double
+          description: Kích cỡ giày
+        color:
+          type: string
+          description: Màu sắc giày
         quantity:
           type: integer
-          description: Quantity of the product
+          description: Số lượng
     Order:
       type: object
       properties:
         id:
           type: integer
           format: int64
-          description: Order ID
+          description: ID của đơn hàng
         customerUsername:
           type: string
-          description: Username of the customer
+          description: Tên đăng nhập của khách hàng
         totalPrice:
           type: number
           format: double
-          description: Total price of the order
+          description: Tổng giá trị đơn hàng
         deliveryDate:
           type: string
           format: date-time
-          description: Delivery date
+          description: Ngày giao hàng
+        shippingAddress:
+          $ref: '#/components/schemas/ShippingAddress'
         status:
           type: string
-          description: Status of the order (PENDING, COMPLETED, CANCELLED)
+          description: Trạng thái đơn hàng (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED)
+          enum: [PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED]
         createdAt:
           type: string
           format: date-time
-          description: Creation timestamp
+          description: Thời gian tạo
+        updatedAt:
+          type: string
+          format: date-time
+          description: Thời gian cập nhật gần nhất
         items:
           type: array
-          description: Items in the order
+          description: Các sản phẩm trong đơn hàng
           items:
             $ref: '#/components/schemas/OrderItem'
     OrderItem:
@@ -149,25 +248,70 @@ components:
         id:
           type: integer
           format: int64
-          description: Order item ID
-        productId:
+          description: ID của chi tiết đơn hàng
+        orderId:
           type: integer
           format: int64
-          description: ID of the product
+          description: ID của đơn hàng
+        shoeId:
+          type: integer
+          format: int64
+          description: ID của giày
+        size:
+          type: number
+          format: double
+          description: Kích cỡ giày
+        color:
+          type: string
+          description: Màu sắc giày
         quantity:
           type: integer
-          description: Quantity of the product
+          description: Số lượng
         unitPrice:
           type: number
           format: double
-          description: Price per unit
+          description: Giá trên mỗi đơn vị
+        shoeName:
+          type: string
+          description: Tên giày
+        imageUrl:
+          type: string
+          description: URL hình ảnh giày
+    ShippingAddress:
+      type: object
+      required:
+        - recipientName
+        - phone
+        - province
+        - district
+        - ward
+        - detail
+      properties:
+        recipientName:
+          type: string
+          description: Tên người nhận
+        phone:
+          type: string
+          description: Số điện thoại liên hệ
+        province:
+          type: string
+          description: Tỉnh/Thành phố
+        district:
+          type: string
+          description: Quận/Huyện
+        ward:
+          type: string
+          description: Phường/Xã
+        detail:
+          type: string
+          description: Địa chỉ chi tiết
     Error:
       type: object
       properties:
         code:
           type: integer
           format: int32
-          description: Error code
+          description: Mã lỗi
         message:
           type: string
-          description: Error message 
+          description: Thông báo lỗi 

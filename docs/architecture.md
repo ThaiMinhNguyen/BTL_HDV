@@ -15,7 +15,7 @@ Hệ thống **DatHangMicroService** là một nền tảng thương mại đi�
 Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao diện web). Backend sử dụng kiến trúc microservices, với các dịch vụ giao tiếp qua REST API và Apache Kafka cho các tác vụ bất đồng bộ. Frontend là một ứng dụng web đơn trang (SPA) được xây dựng bằng HTML, Tailwind CSS, và JavaScript, tương tác với backend qua API Gateway.
 
 ```
-[Client] <-> [Frontend (HTML/JS)] <-> [API Gateway] <-> [Microservices: Product, Order, Cart, User, Notification]
+[Client] <-> [Frontend (HTML/JS)] <-> [API Gateway] <-> [Microservices: Shoe, Order, Cart, User, Notification]
                                              |
                                          [Kafka] <-> [Notification Service]
                                              |
@@ -29,7 +29,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 1. **API Gateway (`api-gateway`)**
    - **Mục đích**: Định tuyến yêu cầu từ client đến các microservices.
    - **Công nghệ**: Spring Cloud Gateway, tích hợp với Eureka.
-   - **Chức năng**: Cân bằng tải, định tuyến (ví dụ: `/products/**` đến `product-service`, `/orders/**` đến `order-service`).
+   - **Chức năng**: Cân bằng tải, định tuyến (ví dụ: `/api/shoes/**` đến `shoe-service`, `/api/orders/**` đến `order-service`).
    - **Cổng**: 8080.
    - **Tệp chính**:
      - `src/main/java/com/example/apigateway/ApiGatewayApplication.java`
@@ -49,10 +49,10 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
    - **Mục đích**: Quản lý tạo, cập nhật, và truy xuất đơn hàng.
    - **Công nghệ**: Spring Boot, Spring Data JPA, Kafka.
    - **Chức năng**:
-     - Cung cấp REST API (ví dụ: `POST /orders`, `GET /orders/{id}`).
-     - Tương tác với `product-service` để xác thực sản phẩm.
+     - Cung cấp REST API (ví dụ: `POST /api/orders`, `GET /api/orders/{id}`).
+     - Tương tác với `shoe-service` để xác thực sản phẩm.
      - Gửi sự kiện `order-created` đến Kafka.
-   - **Cơ sở dữ liệu**: MySQL (bảng `orders` trong `order_db`).
+   - **Cơ sở dữ liệu**: MySQL (bảng `orders` trong `shoe_order_db`).
    - **Cổng**: 8081.
    - **Tệp chính**:
      - `src/main/java/com/example/orderservice/OrderServiceApplication.java`
@@ -65,9 +65,9 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
    - **Mục đích**: Quản lý giỏ hàng của người dùng.
    - **Công nghệ**: Spring Boot, Spring Data JPA.
    - **Chức năng**:
-     - Cung cấp REST API (ví dụ: `POST /cart/{username}/items`, `GET /cart/{username}/items`).
+     - Cung cấp REST API (ví dụ: `POST /api/cart/{username}/items`, `GET /api/cart/{username}/items`).
      - Lưu trữ các mục trong giỏ hàng theo người dùng.
-   - **Cơ sở dữ liệu**: MySQL (bảng `cart_items` trong `order_db`).
+   - **Cơ sở dữ liệu**: MySQL (bảng `cart_items` trong `shoe_order_db`).
    - **Cổng**: 8084.
    - **Tệp chính**:
      - `src/main/java/com/example/cartservice/CartServiceApplication.java`
@@ -80,9 +80,9 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
    - **Mục đích**: Quản lý xác thực và thông tin người dùng.
    - **Công nghệ**: Spring Boot, Spring Data JPA.
    - **Chức năng**:
-     - Cung cấp REST API (ví dụ: `GET /users/{username}/permission` để xác thực).
+     - Cung cấp REST API (ví dụ: `GET /api/users/{username}/permission` để xác thực).
      - Xác thực người dùng qua Basic Auth.
-   - **Cơ sở dữ liệu**: MySQL (bảng `users` trong `order_db`).
+   - **Cơ sở dữ liệu**: MySQL (bảng `users` trong `shoe_order_db`).
    - **Cổng**: 8083.
    - **Tệp chính**:
      - `src/main/java/com/example/userservice/UserServiceApplication.java`
@@ -91,18 +91,18 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
      - `src/main/resources/application.properties`
    - **Phụ thuộc**: Eureka Server, MySQL.
 
-6. **Product Service (`product-service`)**
-   - **Mục đích**: Quản lý danh mục sản phẩm.
+6. **Shoe Service (`shoe-service`)**
+   - **Mục đích**: Quản lý danh mục sản phẩm giày.
    - **Công nghệ**: Spring Boot, Spring Data JPA.
    - **Chức năng**:
-     - Cung cấp REST API (ví dụ: `GET /products`, `GET /products/{id}`).
-     - Cung cấp thông tin sản phẩm (tên, giá, số lượng tồn) cho `order-service` và `cart-service`.
-   - **Cơ sở dữ liệu**: MySQL (bảng `products` trong `order_db`).
+     - Cung cấp REST API (ví dụ: `GET /api/shoes`, `GET /api/shoes/{id}`).
+     - Cung cấp thông tin sản phẩm giày (tên, giá, số lượng tồn) cho `order-service` và `cart-service`.
+   - **Cơ sở dữ liệu**: MySQL (bảng `shoes` trong `shoe_order_db`).
    - **Cổng**: 8082.
    - **Tệp chính**:
-     - `src/main/java/com/example/productservice/ProductServiceApplication.java`
-     - `src/main/java/com/example/productservice/controller/ProductController.java`
-     - `src/main/java/com/example/productservice/entity/Product.java`
+     - `src/main/java/com/example/shoeservice/ShoeServiceApplication.java`
+     - `src/main/java/com/example/shoeservice/controller/ShoeController.java`
+     - `src/main/java/com/example/shoeservice/entity/Shoe.java`
      - `src/main/resources/application.properties`
    - **Phụ thuộc**: Eureka Server, MySQL.
 
@@ -112,6 +112,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
    - **Chức năng**:
      - Tiêu thụ sự kiện Kafka (ví dụ: topic `order-created`).
      - Gửi email xác nhận qua Resend API (`no-reply@resend.dev`).
+     - Cung cấp API `POST /api/notifications/email` để gửi email xác nhận đơn hàng.
    - **Cổng**: 8085.
    - **Tệp chính**:
      - `src/main/java/com/example/notificationservice/NotificationServiceApplication.java`
@@ -131,11 +132,11 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 
 9. **Cơ sở dữ liệu (MySQL)**
    - **Mục đích**: Lưu trữ dữ liệu cho đơn hàng, giỏ hàng, người dùng, và sản phẩm.
-   - **Cơ sở dữ liệu**: `order_db`.
+   - **Cơ sở dữ liệu**: `shoe_order_db`.
    - **Bảng**:
-     - `products`: Thông tin sản phẩm (ID, tên, giá, số lượng, mô tả).
-     - `orders`: Thông tin đơn hàng (ID, user_id, product_id, số lượng, trạng thái, tên khách, địa chỉ, email, điện thoại, ngày giao).
-     - `cart_items`: Mục trong giỏ hàng (ID, user_id, product_id, số lượng).
+     - `shoes`: Thông tin sản phẩm giày (ID, tên, giá, số lượng, mô tả).
+     - `orders`: Thông tin đơn hàng (ID, user_id, shoe_id, số lượng, trạng thái, tên khách, địa chỉ, email, điện thoại, ngày giao).
+     - `cart_items`: Mục trong giỏ hàng (ID, user_id, shoe_id, số lượng).
      - `users`: Thông tin người dùng (ID, username, password).
    - **Cổng**: 3306 (ánh xạ sang 3307 trên host).
    - **Cấu hình**:
@@ -173,7 +174,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 ### 2.3 Triển Khai
 - **Container hóa**: Docker và Docker Compose.
 - **Dịch vụ trong `docker-compose.yml`**:
-  - `eureka-server`, `api-gateway`, `frontend`, `mysql`, `order-service`, `user-service`, `product-service`, `cart-service`, `notification-service`.
+  - `eureka-server`, `api-gateway`, `frontend`, `mysql`, `order-service`, `user-service`, `shoe-service`, `cart-service`, `notification-service`.
 - **Mạng**: Các dịch vụ giao tiếp qua mạng bridge (`app-network`).
 - **Kiểm tra sức khỏe**:
   - Eureka: Kiểm tra `/actuator/health`.
@@ -187,25 +188,25 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 
 ### 3.1 Luồng Đặt Hàng
 1. **Duyệt Sản Phẩm**:
-   - Người dùng truy cập frontend, gửi `GET /products` qua API Gateway đến `product-service`.
+   - Người dùng truy cập frontend, gửi `GET /api/shoes` qua API Gateway đến `shoe-service`.
    - Frontend hiển thị danh sách sản phẩm (tên, giá, số lượng tồn).
 
 2. **Thêm vào Giỏ Hàng**:
-   - Người dùng nhấn "Thêm vào Giỏ", gửi `POST /cart/{username}/items` đến `cart-service`.
+   - Người dùng nhấn "Thêm vào Giỏ", gửi `POST /api/cart/{username}/items` đến `cart-service`.
    - Yêu cầu đăng nhập; nếu chưa đăng nhập, hiển thị modal đăng nhập.
    - Cập nhật số lượng giỏ hàng trên giao diện.
 
 3. **Xem Giỏ Hàng**:
-   - Người dùng nhấn "Giỏ Hàng", gửi `GET /cart/{username}/items` đến `cart-service`.
-   - Frontend lấy chi tiết sản phẩm (`GET /products/{id}`) từ `product-service` cho từng mục.
+   - Người dùng nhấn "Giỏ Hàng", gửi `GET /api/cart/{username}/items` đến `cart-service`.
+   - Frontend lấy chi tiết sản phẩm (`GET /api/shoes/{id}`) từ `shoe-service` cho từng mục.
    - Hiển thị giỏ hàng với checkbox, ô số lượng, và nút xóa.
 
 4. **Thanh Toán**:
    - Người dùng chọn mục và nhấn "Thanh Toán", hiển thị form thanh toán.
    - Người dùng điền thông tin (tên, địa chỉ, email, điện thoại, ngày giao).
-   - Frontend gửi `POST /orders` đến `order-service` với dữ liệu đơn hàng (username, các mục, thông tin khách).
+   - Frontend gửi `POST /api/orders` đến `order-service` với dữ liệu đơn hàng (username, các mục, thông tin khách).
    - `order-service`:
-     - Xác thực sản phẩm qua `product-service` (`GET /products/{id}`).
+     - Xác thực sản phẩm qua `shoe-service` (`GET /api/shoes/{id}`).
      - Lưu đơn hàng vào bảng `orders`.
      - Gửi sự kiện `order-created` đến Kafka.
    - Frontend xóa giỏ hàng và hiển thị thông báo thành công.
@@ -217,7 +218,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 ### 3.2 Luồng Xác Thực
 1. **Đăng Nhập**:
    - Người dùng nhấn "Đăng Nhập", hiển thị modal.
-   - Gửi username và password qua `GET /users/{username}/permission` đến `user-service` với `Basic Auth` (base64 của `username:password`).
+   - Gửi username và password qua `GET /api/users/{username}/permission` đến `user-service` với `Basic Auth` (base64 của `username:password`).
    - Nếu thành công, lưu `currentUser` trong frontend và cập nhật giao diện.
 
 ## 4. Công Nghệ Sử Dụng
@@ -241,8 +242,8 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 
 ## 5. Mô Hình Dữ Liệu
 
-### Bảng MySQL (trong `order_db`)
-1. **Products**:
+### Bảng MySQL (trong `shoe_order_db`)
+1. **Shoes**:
    - `id`: Khóa chính (tự tăng).
    - `name`: Tên sản phẩm.
    - `price`: Giá sản phẩm.
@@ -252,7 +253,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 2. **Orders**:
    - `id`: Khóa chính (tự tăng).
    - `user_id`: Khóa ngoại (tham chiếu `users`).
-   - `product_id`: Khóa ngoại (tham chiếu `products`).
+   - `shoe_id`: Khóa ngoại (tham chiếu `shoes`).
    - `quantity`: Số lượng.
    - `status`: Trạng thái (CREATED, PROCESSING, v.v.).
    - `customer_name`: Tên khách hàng.
@@ -264,7 +265,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 3. **Cart Items**:
    - `id`: Khóa chính (tự tăng).
    - `user_id`: Khóa ngoại (tham chiếu `users`).
-   - `product_id`: Khóa ngoại (tham chiếu `products`).
+   - `shoe_id`: Khóa ngoại (tham chiếu `shoes`).
    - `quantity`: Số lượng.
 
 4. **Users**:
@@ -275,7 +276,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
 ## 6. Điểm Mạnh
 
 ### Backend
-- **Kiến trúc Microservices**: Bao gồm đầy đủ các dịch vụ (`order`, `cart`, `user`, `product`, `notification`), dễ mở rộng và bảo trì.
+- **Kiến trúc Microservices**: Bao gồm đầy đủ các dịch vụ (`order`, `cart`, `user`, `shoe`, `notification`), dễ mở rộng và bảo trì.
 - **Khám phá dịch vụ**: Eureka hỗ trợ đăng ký và cân bằng tải động.
 - **Xử lý bất đồng bộ**: Kafka đảm bảo thông báo đơn hàng đáng tin cậy.
 - **Container hóa**: Docker Compose đơn giản hóa triển khai.
@@ -308,7 +309,7 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
    - `Basic Auth` không an toàn.
    - Thiếu bảo vệ CSRF cho các yêu cầu POST.
 3. **Hiệu suất**:
-   - Gửi nhiều yêu cầu `GET /products/{id}` cho các mục trong giỏ hàng, gây độ trễ.
+   - Gửi nhiều yêu cầu `GET /api/shoes/{id}` cho các mục trong giỏ hàng, gây độ trễ.
 4. **Xác thực dữ liệu**:
    - Chỉ kiểm tra ngày giao hàng, thiếu xác thực email, điện thoại.
 5. **Xử lý lỗi**:
@@ -328,4 +329,4 @@ Hệ thống bao gồm **backend** (các microservices) và **frontend** (giao d
   - Sử dụng Nginx để cân bằng tải bổ sung trong sản xuất.
 
 ## 9. Kết Luận
-Hệ thống **DatHangMicroService** là một nền tảng thương mại điện tử toàn diện với backend microservices và frontend thân thiện. Backend bao gồm tất cả dịch vụ cần thiết (`order`, `cart`, `user`, `product`, `notification`) và hỗ trợ quy trình đặt hàng từ đầu đến cuối với thông báo email. Frontend cung cấp trải nghiệm người dùng mượt mà. Tuy nhiên, cần cải thiện bảo mật, xử lý lỗi, và tài liệu để sẵn sàng cho sản xuất. Với các đề xuất trên, hệ thống có thể trở thành một nền tảng an toàn, dễ mở rộng, và dễ bảo trì.
+Hệ thống **DatHangMicroService** là một nền tảng thương mại điện tử toàn diện với backend microservices và frontend thân thiện. Backend bao gồm tất cả dịch vụ cần thiết (`order`, `cart`, `user`, `shoe`, `notification`) và hỗ trợ quy trình đặt hàng từ đầu đến cuối với thông báo email. Frontend cung cấp trải nghiệm người dùng mượt mà. Tuy nhiên, cần cải thiện bảo mật, xử lý lỗi, và tài liệu để sẵn sàng cho sản xuất. Với các đề xuất trên, hệ thống có thể trở thành một nền tảng an toàn, dễ mở rộng, và dễ bảo trì.

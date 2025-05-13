@@ -1,0 +1,733 @@
+openapi: 3.0.0
+info:
+  title: Shoe Service API
+  description: API quản lý thông tin giày và kiểm tra tồn kho giày trong hệ thống đặt hàng trực tuyến
+  version: 1.0.0
+servers:
+  - url: http://localhost:8082
+    description: Máy chủ phát triển cục bộ
+paths:
+  /api/shoes:
+    get:
+      summary: Lấy tất cả sản phẩm giày
+      description: Trả về danh sách tất cả các giày có sẵn
+      parameters:
+        - name: page
+          in: query
+          description: Số trang (bắt đầu từ 0)
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Số lượng giày trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shoe'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Thêm giày mới
+      description: Thêm một đôi giày mới vào hệ thống (Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoeRequest'
+      responses:
+        '201':
+          description: Giày đã được thêm thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shoe'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Không có quyền truy cập
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/{id}:
+    get:
+      summary: Lấy thông tin giày theo ID
+      description: Trả về thông tin chi tiết của một đôi giày theo ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shoe'
+        '404':
+          description: Không tìm thấy giày
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Cập nhật thông tin giày
+      description: Cập nhật thông tin giày theo ID (Admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoeRequest'
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shoe'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Không tìm thấy giày
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/brands/{brandId}:
+    get:
+      summary: Lấy giày theo thương hiệu
+      description: Trả về danh sách giày thuộc thương hiệu cụ thể
+      parameters:
+        - name: brandId
+          in: path
+          required: true
+          description: ID của thương hiệu
+          schema:
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          description: Số trang (bắt đầu từ 0)
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Số lượng giày trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shoe'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '404':
+          description: Không tìm thấy thương hiệu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/categories/{categoryId}:
+    get:
+      summary: Lấy giày theo danh mục
+      description: Trả về danh sách giày thuộc danh mục cụ thể
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID của danh mục
+          schema:
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          description: Số trang (bắt đầu từ 0)
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Số lượng giày trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shoe'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '404':
+          description: Không tìm thấy danh mục
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/gender/{gender}:
+    get:
+      summary: Lấy giày theo giới tính
+      description: Trả về danh sách giày dành cho giới tính cụ thể
+      parameters:
+        - name: gender
+          in: path
+          required: true
+          description: Giới tính (MEN, WOMEN, UNISEX)
+          schema:
+            type: string
+            enum: [MEN, WOMEN, UNISEX]
+        - name: page
+          in: query
+          description: Số trang (bắt đầu từ 0)
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Số lượng giày trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shoe'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '400':
+          description: Giới tính không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/price:
+    get:
+      summary: Lấy giày trong khoảng giá
+      description: Trả về danh sách giày trong khoảng giá cụ thể
+      parameters:
+        - name: min
+          in: query
+          required: true
+          description: Giá tối thiểu
+          schema:
+            type: number
+            format: double
+        - name: max
+          in: query
+          required: true
+          description: Giá tối đa
+          schema:
+            type: number
+            format: double
+        - name: page
+          in: query
+          description: Số trang (bắt đầu từ 0)
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Số lượng giày trên mỗi trang
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Shoe'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+        '400':
+          description: Khoảng giá không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/{id}/inventory:
+    get:
+      summary: Lấy thông tin tồn kho của giày
+      description: Trả về thông tin tồn kho của một đôi giày theo ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShoeInventory'
+        '404':
+          description: Không tìm thấy giày
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/check:
+    get:
+      summary: Kiểm tra số lượng giày còn
+      description: Kiểm tra tính khả dụng của giày với size và màu sắc cụ thể
+      parameters:
+        - name: shoeId
+          in: query
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          required: true
+          description: Kích cỡ giày
+          schema:
+            type: number
+            format: double
+        - name: color
+          in: query
+          required: true
+          description: Màu sắc giày
+          schema:
+            type: string
+        - name: quantity
+          in: query
+          required: true
+          description: Số lượng cần kiểm tra
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available:
+                    type: boolean
+                    description: Tồn kho đủ số lượng yêu cầu hay không
+                  currentStock:
+                    type: integer
+                    description: Số lượng tồn kho hiện tại
+        '404':
+          description: Không tìm thấy giày hoặc không có size/màu tương ứng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/{id}/updateInventory:
+    put:
+      summary: Cập nhật số lượng tồn kho
+      description: Cập nhật số lượng tồn kho của giày với size và màu sắc cụ thể
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - size
+                - color
+                - quantity
+              properties:
+                size:
+                  type: number
+                  format: double
+                  description: Kích cỡ giày
+                color:
+                  type: string
+                  description: Màu sắc giày
+                quantity:
+                  type: integer
+                  description: Số lượng cần cập nhật (âm để giảm, dương để tăng)
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoeInventory'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Không tìm thấy giày hoặc không có size/màu tương ứng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/brands:
+    get:
+      summary: Lấy danh sách thương hiệu
+      description: Trả về danh sách tất cả các thương hiệu giày
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brand'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/shoes/categories:
+    get:
+      summary: Lấy danh sách danh mục
+      description: Trả về danh sách tất cả các danh mục giày
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Shoe:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID của giày
+        name:
+          type: string
+          description: Tên giày
+        description:
+          type: string
+          description: Mô tả giày
+        price:
+          type: number
+          format: double
+          description: Giá giày
+        brandId:
+          type: integer
+          format: int64
+          description: ID của thương hiệu
+        categoryId:
+          type: integer
+          format: int64
+          description: ID của danh mục
+        imageUrl:
+          type: string
+          description: URL hình ảnh giày
+        material:
+          type: string
+          description: Chất liệu giày
+        gender:
+          type: string
+          description: Giới tính (MEN, WOMEN, UNISEX)
+          enum: [MEN, WOMEN, UNISEX]
+        createdAt:
+          type: string
+          format: date-time
+          description: Thời gian tạo
+        updatedAt:
+          type: string
+          format: date-time
+          description: Thời gian cập nhật gần nhất
+        brand:
+          $ref: '#/components/schemas/Brand'
+        category:
+          $ref: '#/components/schemas/Category'
+    ShoeRequest:
+      type: object
+      required:
+        - name
+        - price
+        - brandId
+        - categoryId
+        - gender
+      properties:
+        name:
+          type: string
+          description: Tên giày
+        description:
+          type: string
+          description: Mô tả giày
+        price:
+          type: number
+          format: double
+          description: Giá giày
+        brandId:
+          type: integer
+          format: int64
+          description: ID của thương hiệu
+        categoryId:
+          type: integer
+          format: int64
+          description: ID của danh mục
+        imageUrl:
+          type: string
+          description: URL hình ảnh giày
+        material:
+          type: string
+          description: Chất liệu giày
+        gender:
+          type: string
+          description: Giới tính (MEN, WOMEN, UNISEX)
+          enum: [MEN, WOMEN, UNISEX]
+    ShoeInventory:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID của tồn kho
+        shoeId:
+          type: integer
+          format: int64
+          description: ID của giày
+        size:
+          type: number
+          format: double
+          description: Kích cỡ giày
+        color:
+          type: string
+          description: Màu sắc giày
+        quantityInStock:
+          type: integer
+          description: Số lượng tồn kho
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Thời gian cập nhật tồn kho gần nhất
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID của thương hiệu
+        name:
+          type: string
+          description: Tên thương hiệu
+        description:
+          type: string
+          description: Mô tả thương hiệu
+        logoUrl:
+          type: string
+          description: URL logo thương hiệu
+        country:
+          type: string
+          description: Quốc gia xuất xứ
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID của danh mục
+        name:
+          type: string
+          description: Tên danh mục
+        description:
+          type: string
+          description: Mô tả danh mục
+        parentId:
+          type: integer
+          format: int64
+          description: ID của danh mục cha (nếu có)
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Mã lỗi
+        message:
+          type: string
+          description: Thông báo lỗi 

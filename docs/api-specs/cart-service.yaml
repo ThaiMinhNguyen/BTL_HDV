@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Cart Service API
-  description: API quản lý giỏ hàng của người dùng, cho phép thêm, xóa và cập nhật sản phẩm trong giỏ hàng
+  description: API quản lý giỏ hàng của người dùng, cho phép thêm, xóa và cập nhật sản phẩm giày trong giỏ hàng
   version: 1.0.0
 servers:
   - url: http://localhost:8084
@@ -9,8 +9,8 @@ servers:
 paths:
   /api/cart/{username}/items:
     get:
-      summary: Lấy giỏ hàng của người dùng
-      description: Trả về danh sách các sản phẩm trong giỏ hàng của người dùng
+      summary: Lấy danh sách sản phẩm trong giỏ hàng
+      description: Trả về danh sách các sản phẩm giày trong giỏ hàng của người dùng
       parameters:
         - name: username
           in: path
@@ -41,7 +41,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       summary: Thêm sản phẩm vào giỏ hàng
-      description: Thêm sản phẩm mới vào giỏ hàng của người dùng hoặc cập nhật số lượng nếu sản phẩm đã tồn tại
+      description: Thêm sản phẩm giày mới vào giỏ hàng của người dùng hoặc cập nhật số lượng nếu sản phẩm đã tồn tại
       parameters:
         - name: username
           in: path
@@ -80,10 +80,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /api/cart/{username}/items/{productId}:
-    put:
-      summary: Cập nhật số lượng sản phẩm
-      description: Cập nhật số lượng sản phẩm trong giỏ hàng
+    delete:
+      summary: Xóa tất cả sản phẩm trong giỏ hàng
+      description: Xóa tất cả sản phẩm giày ra khỏi giỏ hàng của người dùng (sau khi đặt hàng thành công)
       parameters:
         - name: username
           in: path
@@ -91,10 +90,47 @@ paths:
           description: Tên đăng nhập của người dùng
           schema:
             type: string
-        - name: productId
+      responses:
+        '200':
+          description: Xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Trạng thái thao tác
+                  message:
+                    type: string
+                    description: Thông báo thành công
+        '404':
+          description: Không tìm thấy người dùng hoặc giỏ hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/cart/{username}/items/{itemId}:
+    put:
+      summary: Cập nhật số lượng sản phẩm
+      description: Cập nhật số lượng sản phẩm giày trong giỏ hàng
+      parameters:
+        - name: username
           in: path
           required: true
-          description: ID của sản phẩm
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          description: ID của mục giỏ hàng
           schema:
             type: integer
             format: int64
@@ -137,7 +173,7 @@ paths:
                 $ref: '#/components/schemas/Error'
     delete:
       summary: Xóa sản phẩm khỏi giỏ hàng
-      description: Xóa sản phẩm ra khỏi giỏ hàng của người dùng
+      description: Xóa sản phẩm giày ra khỏi giỏ hàng của người dùng
       parameters:
         - name: username
           in: path
@@ -145,10 +181,54 @@ paths:
           description: Tên đăng nhập của người dùng
           schema:
             type: string
-        - name: productId
+        - name: itemId
           in: path
           required: true
-          description: ID của sản phẩm
+          description: ID của mục giỏ hàng
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: Trạng thái thao tác
+                  message:
+                    type: string
+                    description: Thông báo thành công
+        '404':
+          description: Không tìm thấy người dùng, giỏ hàng hoặc sản phẩm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi máy chủ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/cart/{username}/shoes/{shoeId}:
+    delete:
+      summary: Xóa tất cả sản phẩm có cùng shoeId
+      description: Xóa tất cả sản phẩm có cùng shoeId khỏi giỏ hàng của người dùng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+        - name: shoeId
+          in: path
+          required: true
+          description: ID của giày
           schema:
             type: integer
             format: int64
@@ -190,10 +270,17 @@ components:
         username:
           type: string
           description: Tên đăng nhập của người dùng
-        productId:
+        shoeId:
           type: integer
           format: int64
-          description: ID của sản phẩm
+          description: ID của sản phẩm giày
+        size:
+          type: number
+          format: double
+          description: Kích cỡ giày
+        color:
+          type: string
+          description: Màu sắc giày
         quantity:
           type: integer
           description: Số lượng
@@ -201,19 +288,39 @@ components:
           type: number
           format: double
           description: Giá sản phẩm tại thời điểm thêm vào giỏ
-        productName:
+        shoeName:
           type: string
-          description: Tên sản phẩm
+          description: Tên giày
+        imageUrl:
+          type: string
+          description: URL hình ảnh giày
+        createdAt:
+          type: string
+          format: date-time
+          description: Thời gian tạo
+        updatedAt:
+          type: string
+          format: date-time
+          description: Thời gian cập nhật gần nhất
     AddToCartRequest:
       type: object
       required:
-        - productId
+        - shoeId
+        - size
+        - color
         - quantity
       properties:
-        productId:
+        shoeId:
           type: integer
           format: int64
-          description: ID của sản phẩm
+          description: ID của sản phẩm giày
+        size:
+          type: number
+          format: double
+          description: Kích cỡ giày
+        color:
+          type: string
+          description: Màu sắc giày
         quantity:
           type: integer
           description: Số lượng sản phẩm

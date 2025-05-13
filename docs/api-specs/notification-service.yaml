@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Notification Service API
-  description: API quản lý việc gửi thông báo cho người dùng, chủ yếu là gửi email xác nhận đơn hàng
+  description: API quản lý việc gửi thông báo cho người dùng, chủ yếu là gửi email xác nhận đơn hàng thông qua SMTP Gmail
   version: 1.0.0
 servers:
   - url: http://localhost:8085
@@ -9,8 +9,8 @@ servers:
 paths:
   /api/notifications/email:
     post:
-      summary: Gửi email thông báo
-      description: Gửi email thông báo đến người dùng
+      summary: Gửi email xác nhận đơn hàng
+      description: Gửi email thông báo đến người dùng với cơ chế thử lại khi thất bại
       requestBody:
         required: true
         content:
@@ -71,8 +71,8 @@ components:
           description: ID của thông báo đã được gửi
         status:
           type: string
-          description: Trạng thái gửi (SENT, FAILED)
-          enum: [SENT, FAILED]
+          description: Trạng thái gửi (SENT, FAILED, RETRYING)
+          enum: [SENT, FAILED, RETRYING]
         sentAt:
           type: string
           format: date-time
@@ -80,6 +80,9 @@ components:
         message:
           type: string
           description: Thông báo kết quả
+        attemptCount:
+          type: integer
+          description: Số lần đã thử gửi
     Notification:
       type: object
       properties:
@@ -103,7 +106,7 @@ components:
         status:
           type: string
           description: Trạng thái gửi
-          enum: [PENDING, SENT, FAILED]
+          enum: [PENDING, SENT, FAILED, RETRYING]
         createdAt:
           type: string
           format: date-time
@@ -112,6 +115,27 @@ components:
           type: string
           format: date-time
           description: Thời gian gửi
+    SmtpConfig:
+      type: object
+      properties:
+        host:
+          type: string
+          description: Máy chủ SMTP (smtp.gmail.com)
+        port:
+          type: integer
+          description: Cổng SMTP (587)
+        username:
+          type: string
+          description: Địa chỉ email Gmail
+        password:
+          type: string
+          description: Mật khẩu ứng dụng Gmail
+        auth:
+          type: boolean
+          description: Yêu cầu xác thực
+        starttlsEnable:
+          type: boolean
+          description: Bật STARTTLS
     Error:
       type: object
       properties:

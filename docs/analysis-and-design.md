@@ -74,9 +74,9 @@
   - **Gửi thông báo xác nhận qua email cho người dùng**
 
 - Các hành động bất khả tri được phân loại thành Entity Service sơ bộ và được nhóm lại thành:
-  - **Product-Service**: Cung cấp thông tin sản phẩm và kiểm tra tồn kho (GET /products, GET /products/{product_id}, PUT /products/{product_id}/stock).
-  - **Cart-Service**: Quản lý giỏ hàng của người dùng (GET /cart/{cart_id}, POST /cart/{cart_id}/items, PUT /cart/{cart_id}/items/{product_id}, DELETE /cart/{cart_id}/items/{product_id}).
-  - **Order-Service**: Quản lý thao tác đặt hàng (POST /orders, GET /orders/{order_id}), xác minh thông tin sản phẩm và xử lý đơn hàng.
+  - **Shoe-Service**: Cung cấp thông tin giày và kiểm tra tồn kho (GET /api/shoes/{id}, GET /api/shoes/check).
+  - **Cart-Service**: Quản lý giỏ hàng của người dùng (GET /api/cart/{username}/items, POST /api/cart/{username}/items, PUT /api/cart/{username}/items/{itemId}, DELETE /api/cart/{username}/items/{itemId}).
+  - **Order-Service**: Quản lý thao tác đặt hàng (POST /api/orders, GET /api/orders/{id}), xác minh thông tin sản phẩm và xử lý đơn hàng.
 
 ### 5. Xác định logic cụ thể cho quy trình:
 - Các hành động không tuân theo bất khả tri vì chúng được quy định cụ thể cho quy trình đặt hàng:
@@ -94,52 +94,82 @@
 
 ### 6. Xác định các nguồn lực:
 - **Danh sách các ngữ cảnh chức năng để xác định tài nguyên**:
-  - Agnostic: `/Products/`, `/Cart/`, `/Orders/`, `/Notifications/` (các tài nguyên tái sử dụng được).
+  - Agnostic: `/api/shoes/`, `/api/cart/`, `/api/orders/`, `/api/notifications/` (các tài nguyên tái sử dụng được).
 - **Ánh xạ giữa thực thể/dịch vụ và tài nguyên**:
 
-| Entity/Service        | Resource             |
-|:---------------------:|:--------------------:|
-| Product               | /Products/           |
-| Cart                  | /Cart/               |
-| Order                 | /Orders/             |
-| Notification          | /Notifications/      |
+| Entity/Service        | Resource                |
+|:---------------------:|:-----------------------:|
+| Shoe                  | /api/shoes/             |
+| Cart                  | /api/cart/              |
+| Order                 | /api/orders/            |
+| Notification          | /api/notifications/     |
+| User                  | /api/users/             |
 
 ### 7. Liên kết năng lực dịch vụ với tài nguyên phương thức:
 - **Liên kết các dịch vụ với tài nguyên và phương thức HTTP**:
-  - **Product-Service (Entity)**: 
-    - Resource: `/Products/`
-    - Methods: `GET /products` (liệt kê sản phẩm), `GET /products/{product_id}` (lấy thông tin sản phẩm), `PUT /products/{product_id}/stock` (cập nhật tồn kho).
+  - **Shoe-Service (Entity)**: 
+    - Resource: `/api/shoes/`
+    - Methods: 
+      - `GET /api/shoes` (lấy tất cả sản phẩm giày)
+      - `GET /api/shoes/{id}` (lấy thông tin giày theo ID)
+      - `GET /api/shoes/brands/{brandId}` (lấy giày theo thương hiệu)
+      - `GET /api/shoes/categories/{categoryId}` (lấy giày theo danh mục)
+      - `GET /api/shoes/gender/{gender}` (lấy giày theo giới tính)
+      - `GET /api/shoes/price` (lấy giày trong khoảng giá)
+      - `GET /api/shoes/{id}/inventory` (lấy thông tin tồn kho của giày)
+      - `GET /api/shoes/check` (kiểm tra số lượng giày còn)
+      - `PUT /api/shoes/{id}/updateInventory` (cập nhật số lượng tồn kho)
+      - `GET /api/shoes/brands` (lấy danh sách thương hiệu)
+      - `GET /api/shoes/categories` (lấy danh sách danh mục)
   - **Cart-Service (Entity)**: 
-    - Resource: `/Cart/`
-    - Methods: `GET /cart/{cart_id}` (lấy giỏ hàng), `POST /cart/{cart_id}/items` (thêm sản phẩm vào giỏ), `PUT /cart/{cart_id}/items/{product_id}` (cập nhật số lượng), `DELETE /cart/{cart_id}/items/{product_id}` (xóa sản phẩm khỏi giỏ).
+    - Resource: `/api/cart/`
+    - Methods: 
+      - `GET /api/cart/{username}/items` (lấy danh sách sản phẩm trong giỏ hàng)
+      - `POST /api/cart/{username}/items` (thêm sản phẩm vào giỏ hàng)
+      - `PUT /api/cart/{username}/items/{itemId}` (cập nhật số lượng sản phẩm)
+      - `DELETE /api/cart/{username}/items/{itemId}` (xóa sản phẩm khỏi giỏ hàng)
+      - `DELETE /api/cart/{username}/shoes/{shoeId}` (xóa tất cả sản phẩm có cùng shoeId)
   - **Order-Service (Entity)**: 
-    - Resource: `/Orders/`
-    - Methods: `POST /orders` (tạo đơn hàng), `GET /orders/{order_id}` (lấy thông tin đơn hàng), `POST /orders/checkout` (xác nhận đặt hàng và xử lý quy trình đặt hàng).
+    - Resource: `/api/orders/`
+    - Methods: 
+      - `POST /api/orders` (tạo đơn hàng mới)
+      - `GET /api/orders/{id}` (lấy thông tin đơn hàng theo ID)
+      - `GET /api/orders/user/{username}` (lấy danh sách đơn hàng của người dùng)
+      - `PUT /api/orders/{id}/status` (cập nhật trạng thái đơn hàng)
+  - **User-Service (Entity)**:
+    - Resource: `/api/users/`
+    - Methods:
+      - `GET /api/users/{username}` (lấy thông tin người dùng)
+      - `GET /api/users/{username}/permission` (kiểm tra quyền người dùng)
+      - `POST /api/users/{username}/info` (lưu thông tin cá nhân của người dùng)
   - **Notification-Service (Utility)**: 
-    - Resource: `/Notifications/`
-    - Method: `POST /email` (gửi email thông báo).
+    - Resource: `/api/notifications/`
+    - Method: 
+      - `POST /api/notifications/email` (gửi email xác nhận đơn hàng)
 
 ### 8. Áp dụng hướng dịch vụ:
 - Quy trình đặt hàng sử dụng các nguyên tắc định hướng dịch vụ (SOA) để đảm bảo tính độc lập, tái sử dụng, và khả năng mở rộng của các dịch vụ.
-- Mỗi dịch vụ (**Product**, **Cart**, **Order**) được thiết kế để xử lý một phần cụ thể của quy trình, với giao tiếp qua RESTful APIs.
+- Mỗi dịch vụ (**Shoe**, **Cart**, **Order**, **User**) được thiết kế để xử lý một phần cụ thể của quy trình, với giao tiếp qua RESTful APIs.
 - Các dịch vụ đăng ký với Eureka Server để khám phá dịch vụ và cân bằng tải.
 - API Gateway điều hướng các yêu cầu từ người dùng đến các dịch vụ tương ứng.
 
 ### 9. Xác định ứng viên thành phần dịch vụ:
-- **Order-Service** gọi **Product-Service** để kiểm tra tồn kho và cập nhật số lượng sản phẩm.
+- **Order-Service** gọi **Shoe-Service** để kiểm tra tồn kho và cập nhật số lượng sản phẩm.
 - **Order-Service** gọi **Cart-Service** để lấy thông tin giỏ hàng.
 - **Order-Service** gọi **Notification-Service** để gửi thông báo xác nhận đơn hàng.
+- **Order-Service** gọi **User-Service** để xác thực người dùng và lấy thông tin người dùng.
 - Các dịch vụ giao tiếp thông qua API Gateway và sử dụng Eureka Server để khám phá dịch vụ.
 
 ### 10. Phân tích các yêu cầu xử lý:
-- Hành động xác minh thông tin được thực hiện trong **Order-Service** thông qua gọi **Product-Service**.
-- **Product-Service** cung cấp thông tin sản phẩm và kiểm tra tồn kho.
+- Hành động xác minh thông tin được thực hiện trong **Order-Service** thông qua gọi **Shoe-Service**.
+- **Shoe-Service** cung cấp thông tin sản phẩm và kiểm tra tồn kho.
 - **Cart-Service** quản lý giỏ hàng của người dùng.
 - **Order-Service** tạo và quản lý đơn hàng, điều phối quy trình đặt hàng.
+- **User-Service** quản lý thông tin và xác thực người dùng.
 - **Notification-Service** xử lý việc gửi email xác nhận.
 
 ### 11. Xác định ứng viên dịch vụ tiện ích:
-- **Notification-Service**: Hành động gửi email với phương thức `POST /email`.
+- **Notification-Service**: Hành động gửi email với phương thức `POST /api/notifications/email`.
 
 ### 12. Xác định ứng viên vi dịch vụ:
 - **Eureka-Server**: Dịch vụ đăng ký và khám phá.
@@ -149,13 +179,12 @@
 
 Hệ thống đặt hàng trực tuyến được thiết kế với các microservices sau:
 
-1. **Product-Service**: Quản lý sản phẩm và tồn kho
+1. **Shoe-Service**: Quản lý thông tin giày và tồn kho
 2. **Cart-Service**: Quản lý giỏ hàng của người dùng
 3. **Order-Service**: Quản lý đơn hàng và điều phối quy trình đặt hàng
-4. **Notification-Service**: Gửi thông báo qua email
-5. **Eureka-Server**: Đăng ký và khám phá dịch vụ
-6. **API-Gateway**: Định tuyến yêu cầu đến các dịch vụ tương ứng
+4. **User-Service**: Quản lý thông tin và xác thực người dùng
+5. **Notification-Service**: Gửi thông báo qua email
+6. **Eureka-Server**: Đăng ký và khám phá dịch vụ
+7. **API-Gateway**: Định tuyến yêu cầu đến các dịch vụ tương ứng
 
 Kiến trúc microservices này cho phép hệ thống có tính mô-đun cao, khả năng mở rộng và khả năng chịu lỗi tốt. Mỗi dịch vụ có thể được phát triển, triển khai và mở rộng độc lập, đồng thời cho phép hệ thống tiếp tục hoạt động ngay cả khi một số dịch vụ gặp sự cố.
-
-**Lưu ý**: Trong các phiên bản tương lai, có thể bổ sung thêm **User-Service** và **Auth-Service** để hỗ trợ đăng ký, đăng nhập và xác thực người dùng.

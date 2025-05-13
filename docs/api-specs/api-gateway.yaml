@@ -7,6 +7,7 @@ servers:
   - url: http://localhost:8080
     description: Máy chủ phát triển cục bộ
 paths:
+  # Order Service APIs
   /api/orders:
     post:
       summary: Tạo đơn hàng mới
@@ -31,7 +32,7 @@ paths:
           description: Lỗi máy chủ
   /api/orders/{id}:
     get:
-      summary: Lấy thông tin đơn hàng
+      summary: Lấy thông tin đơn hàng theo ID
       description: Chuyển tiếp yêu cầu đến Order Service để lấy thông tin đơn hàng theo ID
       parameters:
         - name: id
@@ -52,10 +53,107 @@ paths:
           description: Không tìm thấy đơn hàng
         '500':
           description: Lỗi máy chủ
-  /api/products:
+    put:
+      summary: Cập nhật trạng thái đơn hàng
+      description: Chuyển tiếp yêu cầu đến Order Service để cập nhật trạng thái đơn hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Thông tin trạng thái mới của đơn hàng
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: Trạng thái mới của đơn hàng
+      responses:
+        '200':
+          description: Trạng thái đơn hàng được cập nhật thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy đơn hàng
+        '500':
+          description: Lỗi máy chủ
+  /api/orders/{id}/status:
+    put:
+      summary: Cập nhật trạng thái đơn hàng
+      description: Chuyển tiếp yêu cầu đến Order Service để cập nhật trạng thái đơn hàng
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của đơn hàng
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Thông tin trạng thái mới của đơn hàng
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: Trạng thái mới của đơn hàng
+      responses:
+        '200':
+          description: Trạng thái đơn hàng được cập nhật thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy đơn hàng
+        '500':
+          description: Lỗi máy chủ
+  /api/orders/user/{username}:
     get:
-      summary: Lấy danh sách sản phẩm
-      description: Chuyển tiếp yêu cầu đến Product Service để lấy danh sách sản phẩm
+      summary: Lấy danh sách đơn hàng của người dùng
+      description: Chuyển tiếp yêu cầu đến Order Service để lấy danh sách đơn hàng của người dùng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '404':
+          description: Không tìm thấy người dùng
+        '500':
+          description: Lỗi máy chủ
+
+  # Shoe Service APIs
+  /api/shoes:
+    get:
+      summary: Lấy tất cả sản phẩm giày
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy danh sách tất cả giày
       parameters:
         - name: page
           in: query
@@ -64,7 +162,7 @@ paths:
             type: integer
         - name: size
           in: query
-          description: Số lượng sản phẩm trên mỗi trang
+          description: Số lượng giày trên mỗi trang
           schema:
             type: integer
       responses:
@@ -76,15 +174,15 @@ paths:
                 type: object
         '500':
           description: Lỗi máy chủ
-  /api/products/{id}:
+  /api/shoes/{id}:
     get:
-      summary: Lấy thông tin chi tiết sản phẩm
-      description: Chuyển tiếp yêu cầu đến Product Service để lấy thông tin chi tiết sản phẩm
+      summary: Lấy thông tin giày theo ID
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy thông tin chi tiết giày
       parameters:
         - name: id
           in: path
           required: true
-          description: ID của sản phẩm
+          description: ID của giày
           schema:
             type: integer
             format: int64
@@ -96,9 +194,244 @@ paths:
               schema:
                 type: object
         '404':
-          description: Không tìm thấy sản phẩm
+          description: Không tìm thấy giày
         '500':
           description: Lỗi máy chủ
+  /api/shoes/{id}/inventory:
+    get:
+      summary: Lấy thông tin tồn kho của giày
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy thông tin tồn kho của giày
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Không tìm thấy giày
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/{id}/updateInventory:
+    put:
+      summary: Cập nhật số lượng tồn kho
+      description: Chuyển tiếp yêu cầu đến Shoe Service để cập nhật số lượng tồn kho
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Thông tin cập nhật tồn kho
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Cập nhật tồn kho thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy giày
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/check:
+    get:
+      summary: Kiểm tra số lượng giày còn
+      description: Chuyển tiếp yêu cầu đến Shoe Service để kiểm tra tồn kho giày
+      parameters:
+        - name: shoeId
+          in: query
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+        - name: size
+          in: query
+          required: true
+          description: Kích cỡ giày
+          schema:
+            type: number
+            format: double
+        - name: color
+          in: query
+          required: true
+          description: Màu sắc giày
+          schema:
+            type: string
+        - name: quantity
+          in: query
+          required: true
+          description: Số lượng cần kiểm tra
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Không tìm thấy giày
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/brands:
+    get:
+      summary: Lấy danh sách thương hiệu
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy danh sách thương hiệu
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/brands/{brandId}:
+    get:
+      summary: Lấy giày theo thương hiệu
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy giày theo thương hiệu
+      parameters:
+        - name: brandId
+          in: path
+          required: true
+          description: ID của thương hiệu
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '404':
+          description: Không tìm thấy thương hiệu
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/categories:
+    get:
+      summary: Lấy danh sách danh mục
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy danh sách danh mục
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/categories/{categoryId}:
+    get:
+      summary: Lấy giày theo danh mục
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy giày theo danh mục
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID của danh mục
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '404':
+          description: Không tìm thấy danh mục
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/gender/{gender}:
+    get:
+      summary: Lấy giày theo giới tính
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy giày theo giới tính
+      parameters:
+        - name: gender
+          in: path
+          required: true
+          description: Giới tính (MALE, FEMALE, UNISEX)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Giá trị giới tính không hợp lệ
+        '500':
+          description: Lỗi máy chủ
+  /api/shoes/price:
+    get:
+      summary: Lấy giày trong khoảng giá
+      description: Chuyển tiếp yêu cầu đến Shoe Service để lấy giày trong khoảng giá
+      parameters:
+        - name: min
+          in: query
+          required: true
+          description: Giá tối thiểu
+          schema:
+            type: number
+            format: double
+        - name: max
+          in: query
+          required: true
+          description: Giá tối đa
+          schema:
+            type: number
+            format: double
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '400':
+          description: Giá trị giá không hợp lệ
+        '500':
+          description: Lỗi máy chủ
+
+  # User Service APIs
   /api/users/{username}:
     get:
       summary: Lấy thông tin người dùng
@@ -121,9 +454,64 @@ paths:
           description: Không tìm thấy người dùng
         '500':
           description: Lỗi máy chủ
+  /api/users/{username}/permission:
+    get:
+      summary: Kiểm tra quyền người dùng
+      description: Chuyển tiếp yêu cầu đến User Service để kiểm tra quyền của người dùng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thao tác thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Không tìm thấy người dùng
+        '500':
+          description: Lỗi máy chủ
+  /api/users/{username}/info:
+    post:
+      summary: Lưu thông tin cá nhân của người dùng
+      description: Chuyển tiếp yêu cầu đến User Service để lưu thông tin cá nhân
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+      requestBody:
+        description: Thông tin cá nhân cần lưu
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Thông tin được lưu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy người dùng
+        '500':
+          description: Lỗi máy chủ
+
+  # Cart Service APIs
   /api/cart/{username}/items:
     get:
-      summary: Lấy giỏ hàng của người dùng
+      summary: Lấy danh sách sản phẩm trong giỏ hàng
       description: Chuyển tiếp yêu cầu đến Cart Service để lấy giỏ hàng của người dùng
       parameters:
         - name: username
@@ -145,10 +533,141 @@ paths:
           description: Không tìm thấy người dùng hoặc giỏ hàng
         '500':
           description: Lỗi máy chủ
+    post:
+      summary: Thêm sản phẩm vào giỏ hàng
+      description: Chuyển tiếp yêu cầu đến Cart Service để thêm sản phẩm vào giỏ hàng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+      requestBody:
+        description: Thông tin sản phẩm cần thêm
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Sản phẩm được thêm thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy người dùng hoặc sản phẩm
+        '500':
+          description: Lỗi máy chủ
+  /api/cart/{username}/items/{itemId}:
+    put:
+      summary: Cập nhật số lượng sản phẩm
+      description: Chuyển tiếp yêu cầu đến Cart Service để cập nhật số lượng sản phẩm trong giỏ hàng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          description: ID của sản phẩm trong giỏ hàng
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Thông tin cập nhật số lượng
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: Số lượng mới của sản phẩm
+      responses:
+        '200':
+          description: Số lượng sản phẩm được cập nhật thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Dữ liệu không hợp lệ
+        '404':
+          description: Không tìm thấy người dùng, giỏ hàng hoặc sản phẩm
+        '500':
+          description: Lỗi máy chủ
+    delete:
+      summary: Xóa sản phẩm khỏi giỏ hàng
+      description: Chuyển tiếp yêu cầu đến Cart Service để xóa sản phẩm khỏi giỏ hàng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          description: ID của sản phẩm trong giỏ hàng
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Sản phẩm được xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Không tìm thấy người dùng, giỏ hàng hoặc sản phẩm
+        '500':
+          description: Lỗi máy chủ
+  /api/cart/{username}/shoes/{shoeId}:
+    delete:
+      summary: Xóa tất cả sản phẩm có cùng shoeId
+      description: Chuyển tiếp yêu cầu đến Cart Service để xóa tất cả sản phẩm có cùng shoeId khỏi giỏ hàng
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Tên đăng nhập của người dùng
+          schema:
+            type: string
+        - name: shoeId
+          in: path
+          required: true
+          description: ID của giày
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Sản phẩm được xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Không tìm thấy người dùng, giỏ hàng hoặc sản phẩm
+        '500':
+          description: Lỗi máy chủ
+
+  # Notification Service APIs
   /api/notifications/email:
     post:
-      summary: Gửi email thông báo
-      description: Chuyển tiếp yêu cầu đến Notification Service để gửi email thông báo
+      summary: Gửi email xác nhận đơn hàng
+      description: Chuyển tiếp yêu cầu đến Notification Service để gửi email xác nhận đơn hàng
       requestBody:
         description: Thông tin email cần gửi
         required: true

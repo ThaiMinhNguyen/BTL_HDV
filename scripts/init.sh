@@ -51,8 +51,8 @@ cd services/user-service
 mvn clean package -DskipTests
 cd ../..
 
-echo "Building Product Service..."
-cd services/product-service
+echo "Building Shoe Service..."
+cd services/shoe-service
 mvn clean package -DskipTests
 cd ../..
 
