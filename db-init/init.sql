@@ -139,12 +139,12 @@ VALUES
 -- Thêm dữ liệu mẫu: Shoes
 INSERT INTO shoes (name, description, price, brand_id, category_id, material, gender, image_url)
 VALUES 
-    ('Nike Air Max 270', 'Sports shoes with the largest Max Air cushioning', 150.00, 1, 1, 'Mesh, rubber sole', 'UNISEX', 'https://example.com/airmax270.jpg'),
-    ('Adidas Ultraboost', 'Running shoes with Boost cushioning technology', 180.00, 2, 3, 'Primeknit, Boost sole', 'UNISEX', 'https://example.com/ultraboost.jpg'),
-    ('Converse Chuck Taylor', 'Iconic fashion shoes', 70.00, 3, 2, 'Canvas, rubber sole', 'UNISEX', 'https://example.com/chucktaylor.jpg'),
-    ('Vans Old Skool', 'Classic skateboarding shoes with signature side stripe', 65.00, 4, 2, 'Suede, canvas', 'UNISEX', 'https://example.com/oldskool.jpg'),
-    ('Nike Revolution 6', 'Lightweight and breathable running shoes', 85.00, 1, 3, 'Mesh', 'MEN', 'https://example.com/revolution6.jpg'),
-    ('Adidas Cloudfoam', 'Comfortable daily walking shoes', 75.00, 2, 4, 'Mesh, Cloudfoam sole', 'WOMEN', 'https://example.com/cloudfoam.jpg');
+    ('Nike Air Max 270', 'Sports shoes with the largest Max Air cushioning', 150.00, 1, 1, 'Mesh, rubber sole', 'UNISEX', 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/a28b1224-26bc-46ce-abbd-6551e95c92bd/NIKE+AIR+MAX+270+%28GS%29.png'),
+    ('Adidas Ultraboost', 'Running shoes with Boost cushioning technology', 180.00, 2, 3, 'Primeknit, Boost sole', 'UNISEX', 'https://assets.adidas.com/images/w_766,h_766,f_auto,q_auto,fl_lossy,c_fill,g_auto/817af4454eef4414926f7a1e74997e57_9366/giay-ultraboost-5.jpg'),
+    ('Converse Chuck Taylor', 'Iconic fashion shoes', 70.00, 3, 2, 'Canvas, rubber sole', 'UNISEX', 'https://file.hstatic.net/200000265619/file/converse-chuck-1970s-low-top-mau-den__3__2d5d4acf671742f39b2c443f4f9f046d_grande.jpg'),
+    ('Vans Old Skool', 'Classic skateboarding shoes with signature side stripe', 65.00, 4, 2, 'Suede, canvas', 'UNISEX', 'https://bizweb.dktcdn.net/100/140/774/products/vans-old-skool-black-white-vn000d3hy28-2.jpg'),
+    ('Nike Revolution 6', 'Lightweight and breathable running shoes', 85.00, 1, 3, 'Mesh', 'MEN', 'https://bizweb.dktcdn.net/100/401/610/products/nikerevolution6nextnatureroadd-36294574-27e8-4fb4-8ea2-910e9dc265f6.jpg'),
+    ('Adidas Cloudfoam', 'Comfortable daily walking shoes', 75.00, 2, 4, 'Mesh, Cloudfoam sole', 'WOMEN', 'https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/8bdfa00b4cee43e799eda2a2e5c7e919_9366/Giay_Cloudfoam_Comfy_DJen_IH2966_01_standard.jpg');
 
 -- Thêm dữ liệu mẫu: ShoeInventory
 INSERT INTO shoe_inventory (shoe_id, size, color, quantity_in_stock)
