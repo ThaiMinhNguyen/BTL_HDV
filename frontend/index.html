@@ -173,7 +173,11 @@
                         
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-1">Số lượng</label>
-                            <input type="number" id="detail-quantity" min="1" value="1" class="w-20 p-2 border rounded">
+                            <div class="flex items-center">
+                                <button id="detail-quantity-minus" class="border px-3 py-1 rounded-l hover:bg-gray-100" type="button">-</button>
+                                <input type="number" id="detail-quantity" min="1" value="1" class="w-16 p-2 border-t border-b text-center">
+                                <button id="detail-quantity-plus" class="border px-3 py-1 rounded-r hover:bg-gray-100" type="button">+</button>
+                            </div>
                         </div>
                         
                         <div class="flex space-x-2 mt-4">

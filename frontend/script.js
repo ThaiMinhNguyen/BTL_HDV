@@ -150,7 +150,40 @@ document.addEventListener('DOMContentLoaded', () => {
             shoeDetailModal.style.display = 'none';
         });
         
-        addToCartBtn.addEventListener('click', () => {
+        // Quantity input change listener
+        detailQuantity.addEventListener('change', () => {
+            if (selectedSize && selectedColor) {
+                updateInventoryStatus();
+            }
+        });
+        
+        // Quantity buttons
+        const quantityMinus = document.getElementById('detail-quantity-minus');
+        const quantityPlus = document.getElementById('detail-quantity-plus');
+        
+        if (quantityMinus) {
+            quantityMinus.addEventListener('click', () => {
+                const currentValue = parseInt(detailQuantity.value) || 1;
+                if (currentValue > 1) {
+                    detailQuantity.value = currentValue - 1;
+                    if (selectedSize && selectedColor) {
+                        updateInventoryStatus();
+                    }
+                }
+            });
+        }
+        
+        if (quantityPlus) {
+            quantityPlus.addEventListener('click', () => {
+                const currentValue = parseInt(detailQuantity.value) || 1;
+                detailQuantity.value = currentValue + 1;
+                if (selectedSize && selectedColor) {
+                    updateInventoryStatus();
+                }
+            });
+        }
+        
+        addToCartBtn.addEventListener('click', async () => {
             if (!currentUser) {
                 alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
                 shoeDetailModal.style.display = 'none';
@@ -163,12 +196,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            addToCart(
+            const quantity = parseInt(detailQuantity.value);
+            
+            // Hiển thị trạng thái đang tải
+            addToCartBtn.textContent = 'Đang kiểm tra...';
+            addToCartBtn.disabled = true;
+            
+            // Thêm sản phẩm vào giỏ hàng
+            await addToCart(
                 selectedShoe.id,
                 selectedSize,
                 selectedColor,
-                parseInt(detailQuantity.value)
+                quantity
             );
+            
+            // Khôi phục trạng thái button
+            addToCartBtn.textContent = 'Thêm vào giỏ hàng';
+            addToCartBtn.disabled = false;
         });
         
         // Filters
@@ -335,6 +379,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Set selected size
                 selectedSize = size;
+                
+                // Update inventory status if both size and color are selected
+                if (selectedColor) {
+                    updateInventoryStatus();
+                }
             });
             detailSizes.appendChild(sizeBtn);
         });
@@ -358,12 +407,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Set selected color
                 selectedColor = color;
+                
+                // Update inventory status if both size and color are selected
+                if (selectedSize) {
+                    updateInventoryStatus();
+                }
             });
             detailColors.appendChild(colorBtn);
         });
         
-        // Reset quantity
+        // Add inventory status element if it doesn't exist
+        let statusElement = document.getElementById('inventory-status');
+        if (!statusElement) {
+            statusElement = document.createElement('p');
+            statusElement.id = 'inventory-status';
+            statusElement.className = 'text-gray-500 mt-2';
+            statusElement.textContent = 'Chọn size và màu để kiểm tra tồn kho';
+            
+            // Add after the colors
+            detailColors.parentNode.insertBefore(statusElement, detailColors.nextSibling);
+        } else {
+            statusElement.textContent = 'Chọn size và màu để kiểm tra tồn kho';
+            statusElement.className = 'text-gray-500 mt-2';
+        }
+        
+        // Reset quantity and enable button
         detailQuantity.value = 1;
+        addToCartBtn.disabled = false;
         
         // Show modal
         shoeDetailModal.style.display = 'flex';
@@ -512,6 +582,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Add new function to check inventory availability
+    async function checkInventoryAvailability(shoeId, size, color, quantity) {
+        try {
+            const queryParams = new URLSearchParams({
+                shoeId: shoeId,
+                size: size,
+                color: color,
+                quantity: quantity
+            }).toString();
+            
+            const response = await fetch(`${API_BASE.shoes}/check?${queryParams}`, {
+                ...API_CONFIG.fetchOptions,
+                method: 'GET'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Không thể kiểm tra tồn kho');
+            }
+            
+            const available = await response.json();
+            return available;
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra tồn kho:', error);
+            return false;
+        }
+    }
+    
     async function addToCart(shoeId, size, color, quantity) {
         if (!currentUser) {
             alert('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng');
@@ -519,6 +616,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
+            // Kiểm tra tồn kho trước khi thêm vào giỏ hàng
+            const isAvailable = await checkInventoryAvailability(shoeId, size, color, quantity);
+            
+            if (!isAvailable) {
+                alert('Sản phẩm không đủ số lượng trong kho. Vui lòng chọn số lượng ít hơn hoặc sản phẩm khác.');
+                return;
+            }
+            
             const authOptions = {
                 ...API_CONFIG.fetchOptions,
                 method: 'POST',
@@ -553,6 +658,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
+            // Tìm item trong cart
+            const item = cart.find(i => i.id === itemId);
+            if (!item) {
+                throw new Error('Không tìm thấy sản phẩm trong giỏ hàng');
+            }
+            
+            // Nếu tăng số lượng, kiểm tra tồn kho
+            if (newQuantity > item.quantity) {
+                // Hiển thị thông báo đang kiểm tra
+                const cartItemElements = document.querySelectorAll(`[data-id="${itemId}"]`);
+                cartItemElements.forEach(elem => {
+                    if (elem.classList.contains('cart-plus-btn')) {
+                        elem.textContent = '...';
+                        elem.disabled = true;
+                    }
+                });
+                
+                // Kiểm tra tồn kho
+                const isAvailable = await checkInventoryAvailability(
+                    item.shoeId, 
+                    item.size, 
+                    item.color, 
+                    newQuantity
+                );
+                
+                // Khôi phục nút
+                cartItemElements.forEach(elem => {
+                    if (elem.classList.contains('cart-plus-btn')) {
+                        elem.textContent = '+';
+                        elem.disabled = false;
+                    }
+                });
+                
+                if (!isAvailable) {
+                    alert('Sản phẩm không đủ số lượng trong kho.');
+                    return;
+                }
+            }
+            
             const authOptions = {
                 ...API_CONFIG.fetchOptions,
                 method: 'PUT',
@@ -573,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayCart();
         } catch (error) {
             console.error('Lỗi khi cập nhật giỏ hàng:', error);
+            alert(error.message);
         }
     }
     
@@ -612,35 +757,55 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Giỏ hàng của bạn đang trống!');
             return;
         }
-    
-        const formData = new FormData(checkoutForm);
-        
-        // Chuyển đổi chuỗi ngày thành định dạng yyyy-MM-ddTHH:mm:ss
-        const deliveryDateInput = formData.get('deliveryDate');
-        const deliveryDate = deliveryDateInput ? new Date(deliveryDateInput + 'T12:00:00').toISOString() : null;
-        
-        const orderData = {
-            customerUsername: currentUser.username,
-            customerName: formData.get('name'),
-            shippingAddress: formData.get('address'), 
-            customerAddress: formData.get('address'),   
-            customerEmail: formData.get('email'),
-            customerPhone: formData.get('phone'),
-            deliveryDate: deliveryDate,
-            paymentMethod: formData.get('paymentMethod'),
-            items: cart.map(item => ({
-                shoeId: item.shoeId,
-                size: item.size,
-                color: item.color,
-                quantity: item.quantity,
-                unitPrice: item.price
-            }))
-        };
-        
-        // Hiển thị chi tiết data để debug
-        console.log('Sending order data:', JSON.stringify(orderData, null, 2));
+
+        // Kiểm tra tồn kho cho tất cả sản phẩm trong giỏ hàng
+        const checkoutBtn = document.querySelector('button[type="submit"]');
+        const originalBtnText = checkoutBtn.textContent;
+        checkoutBtn.textContent = 'Đang kiểm tra tồn kho...';
+        checkoutBtn.disabled = true;
         
         try {
+            // Kiểm tra tồn kho cho từng sản phẩm
+            for (const item of cart) {
+                const isAvailable = await checkInventoryAvailability(
+                    item.shoeId,
+                    item.size,
+                    item.color,
+                    item.quantity
+                );
+                
+                if (!isAvailable) {
+                    throw new Error(`Sản phẩm "${shoes.find(s => s.id === item.shoeId)?.name || 'Không xác định'}" (Size: ${item.size}, Màu: ${item.color}) không đủ số lượng trong kho. Vui lòng cập nhật giỏ hàng.`);
+                }
+            }
+            
+            const formData = new FormData(checkoutForm);
+            
+            // Chuyển đổi chuỗi ngày thành định dạng yyyy-MM-ddTHH:mm:ss
+            const deliveryDateInput = formData.get('deliveryDate');
+            const deliveryDate = deliveryDateInput ? new Date(deliveryDateInput + 'T12:00:00').toISOString() : null;
+            
+            const orderData = {
+                customerUsername: currentUser.username,
+                customerName: formData.get('name'),
+                shippingAddress: formData.get('address'), 
+                customerAddress: formData.get('address'),   
+                customerEmail: formData.get('email'),
+                customerPhone: formData.get('phone'),
+                deliveryDate: deliveryDate,
+                paymentMethod: formData.get('paymentMethod'),
+                items: cart.map(item => ({
+                    shoeId: item.shoeId,
+                    size: item.size,
+                    color: item.color,
+                    quantity: item.quantity,
+                    unitPrice: item.price
+                }))
+            };
+            
+            // Hiển thị chi tiết data để debug
+            console.log('Sending order data:', JSON.stringify(orderData, null, 2));
+            
             const authOptions = {
                 ...API_CONFIG.fetchOptions,
                 method: 'POST',
@@ -675,6 +840,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Lỗi khi đặt hàng:', error);
             alert(error.message);
+        } finally {
+            // Khôi phục trạng thái button
+            checkoutBtn.textContent = originalBtnText;
+            checkoutBtn.disabled = false;
         }
     }
     
@@ -727,5 +896,60 @@ document.addEventListener('DOMContentLoaded', () => {
             count += item.quantity;
         });
         cartCount.textContent = count;
+    }
+
+    // Add a new function to update inventory status display
+    async function updateInventoryStatus() {
+        if (!selectedShoe || !selectedSize || !selectedColor) {
+            return;
+        }
+        
+        const statusElement = document.getElementById('inventory-status');
+        if (!statusElement) return;
+        
+        // Get requested quantity
+        const requestedQuantity = parseInt(detailQuantity.value) || 1;
+        
+        // Hiện thông báo đang kiểm tra
+        statusElement.textContent = 'Đang kiểm tra tồn kho...';
+        statusElement.className = 'text-gray-500 mt-2';
+        
+        try {
+            // Kiểm tra sản phẩm có tồn kho không
+            const inventory = await loadShoeInventory(selectedShoe.id);
+            const inventoryItem = inventory.find(item => 
+                item.size === selectedSize && 
+                item.color === selectedColor
+            );
+            
+            // Nếu không tìm thấy hoặc số lượng = 0
+            if (!inventoryItem || inventoryItem.quantity <= 0) {
+                statusElement.textContent = 'Hết hàng';
+                statusElement.className = 'text-red-500 font-bold mt-2';
+                addToCartBtn.disabled = true;
+            } 
+            // Nếu số lượng yêu cầu lớn hơn tồn kho
+            else if (requestedQuantity > inventoryItem.quantity) {
+                statusElement.textContent = `Chỉ còn ${inventoryItem.quantity} sản phẩm trong kho`;
+                statusElement.className = 'text-red-500 font-bold mt-2';
+                addToCartBtn.disabled = true;
+            }
+            // Nếu sắp hết hàng (dưới 5 cái) nhưng đủ số lượng yêu cầu
+            else if (inventoryItem.quantity < 5) {
+                statusElement.textContent = `Còn ${inventoryItem.quantity} sản phẩm - Sắp hết hàng`;
+                statusElement.className = 'text-orange-500 font-bold mt-2';
+                addToCartBtn.disabled = false;
+            } 
+            // Còn hàng
+            else {
+                statusElement.textContent = 'Còn hàng';
+                statusElement.className = 'text-green-500 font-bold mt-2';
+                addToCartBtn.disabled = false;
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra tồn kho:', error);
+            statusElement.textContent = 'Không thể kiểm tra tồn kho';
+            statusElement.className = 'text-red-500 mt-2';
+        }
     }
 });
